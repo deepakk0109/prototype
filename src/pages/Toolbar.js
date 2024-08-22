@@ -180,11 +180,9 @@ const layouts = [
 
 const components = [
     { id: 1, name: 'Button', type: 'button', icon: '🔘' },
-    { id: 2, name: 'Input', type: 'input', icon: '✏️' },
-    { id: 3, name: 'Textarea', type: 'textarea', icon: '📝' },
-    { id: 4, name: 'Table', type: 'table', icon: '📊' },
-    { id: 5, name: 'Form', type: 'form', icon: '📋' },
-    { id: 6, name: 'Header', type: 'header', icon: '🏷️' }
+    { id: 2, name: 'Textbox', type: 'textarea', icon: '📝' },
+    { id: 3, name: 'Table', type: 'table', icon: '📊', rows: 3, cols: 4 },
+    { id: 4, name: 'Form', type: 'form', icon: '📋' },
   ];
 
 function Toolbar({ setSelectedLayout, setSelectedComponent }) {

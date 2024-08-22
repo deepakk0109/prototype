@@ -74,88 +74,211 @@ function Canvas({ selectedLayout, selectedComponent }) {
     return layout;
   };
 
-  const addComponentToLayout = (component) => {
-    const newComponent = {
-      i: `${component.type}-${components.length + 1}`,
-      x: 0,
-      y: components.length * 2,
-      w: 1,
-      h: 1,
-      static: false,
-      type: component.type,
+  // const addComponentToLayout = (component) => {
+  //   const newComponent = {
+  //     i: `${component.type}-${components.length + 1}`,
+  //     x: 0,
+  //     y: components.length * 2,
+  //     w: 4,
+  //     h: 3,
+  //     static: false,
+  //     type: component.type,
+  //     // rows:component.type==='table'?3:undefined,
+  //     // cols:component.type==='table'?4:undefined
+  //   };
+  //   setLayoutConfig(prevConfig => {
+  //     const updatedMain = {
+  //       ...prevConfig.main,
+  //       elements: [...prevConfig.main.elements, newComponent]
+  //     };
+  //     return { ...prevConfig, main: updatedMain };
+  //   });
+
+  //   setComponents(prevComponents => [...prevComponents, newComponent]);
+  // };
+
+  // useEffect(() => {
+  //   if (selectedComponent) {
+  //     addComponentToLayout(selectedComponent);
+  //   }
+  // }, [selectedComponent]);
+
+
+
+  const TableComponent = () => {
+    // Initialize table structure with a fixed number of rows and columns
+    const tableData = {
+      rows: [
+        ['Row 1 Col 1', 'Row 1 Col 2', 'Row 1 Col 3'],
+        ['Row 2 Col 1', 'Row 2 Col 2', 'Row 2 Col 3'],
+      ],
     };
-
-    setLayoutConfig(prevConfig => {
-      const updatedMain = {
-        ...prevConfig.main,
-        elements: [...prevConfig.main.elements, newComponent]
-      };
-      return { ...prevConfig, main: updatedMain };
-    });
-
-    setComponents(prevComponents => [...prevComponents, newComponent]);
+  
+    // Function to render the table
+    const renderTable = (data) => (
+      <table style={{ width: '100%', height: '100%', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr>
+            {data.rows[0].map((_, colIndex) => (
+              <th key={colIndex} style={{ border: '1px solid #ddd', padding: '8px' }}>
+                Header {colIndex + 1}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {data.rows.map((row, rowIndex) => (
+            <tr key={rowIndex}>
+              {row.map((cell, colIndex) => (
+                <td key={colIndex} style={{ border: '1px solid #ddd', padding: '8px' }}>
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  
+    // Render the static table
+    return <div>{renderTable(tableData)}</div>;
   };
-
-  useEffect(() => {
-    if (selectedComponent) {
-      addComponentToLayout(selectedComponent);
-    }
-  }, [selectedComponent]);
-
-  const renderComponent = (component) => {
+  
+  
+  
+  
+  const FormComponent = ({ initialFields = [{ label: 'Name', type: 'text', name: 'name' }] }) => {
+    const [formFields, setFormFields] = useState(initialFields);
+  
+    const addField = () => setFormFields(prev => [...prev, { label: 'Add label', type: 'text', name: `field${prev.length + 1}` }]);
+    const removeField = (index) => setFormFields(prev => prev.filter((_, i) => i !== index));
+  
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      console.log('Form submitted with fields:', formFields);
+    };
+  
+    return (
+      <form style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }} onSubmit={handleSubmit}>
+        {formFields.map((field, index) => (
+          <label key={index}>
+            {field.label}:
+            <input type={field.type} name={field.name} style={{ width: '90%' }} />
+            <button type="button" onClick={() => removeField(index)}>Remove Field</button>
+          </label>
+        ))}
+        <button type="button" onClick={addField} style={{ width: '100%', backgroundColor: 'lightblue', borderRadius: '5px' }}>
+          Add Field
+        </button>
+        <button type="submit" style={{ width: '100%', backgroundColor: 'lightblue', borderRadius: '5px' }}>
+          Submit
+        </button>
+      </form>
+    );
+  };
+  
+  const RenderComponent = ( component ) => {debugger
     switch (component.type) {
       case 'button':
-        return <button style={{ width: '100%', height: '100%', backgroundColor: 'lightblue', borderRadius: '5px' }}>Button</button>;
+        return (
+          <button style={{ width: '100%', height: '100%', backgroundColor: 'lightblue', borderRadius: '5px' }}>
+            Button
+          </button>
+        );
+  
       case 'textarea':
-        return <textarea style={{ width: '100%', height: '100%' }} rows={4} cols={20} />;
+        return (
+          <textarea style={{ width: '100%', height: '100%' }} rows={4} cols={20} />
+        );
+  
+      case 'table':
+        return <TableComponent initialRows={component.rows} initialCols={component.cols} style={{ width: '100%', height: '100%' }}/>;
+  
+      case 'form':
+        return <FormComponent initialFields={component.fields} style={{ width: '100%', height: '100%' }}/>;
+  
       default:
         return <div>Another Component</div>;
     }
   };
+  
 
-  const onNestedLayoutChange = (newLayout, sectionKey) => {
-    console.log('Nested layout changed for section:', sectionKey, newLayout);
 
-    try {
-      // Update the elements inside the section layout
-      setLayoutConfig(prevConfig => {
-        const updatedElements = prevConfig[sectionKey].elements.map((item) => {
-          const updatedItem = newLayout.find(layoutItem => layoutItem.i === item.i);
-
-          if (updatedItem) {
-            console.log(`Updating item with key: ${item.i}`, updatedItem);
-
-            return {
-              ...item,
-              ...updatedItem,
-              isDraggable: true,
-              isResizable: true,
-              static: false,
-              maxH: updatedItem.maxH !== undefined ? updatedItem.maxH : undefined,
-              maxW: updatedItem.maxW !== undefined ? updatedItem.maxW : undefined,
-              minH: updatedItem.minH !== undefined ? updatedItem.minH : undefined,
-              minW: updatedItem.minW !== undefined ? updatedItem.minW : undefined,
-            };
-          } else {
-            console.warn(`No updated layout found for item with key: ${item.i}`);
-            return item;
-          }
-        });
-
-        console.log('Updated elements:', updatedElements);
-
-        return {
-          ...prevConfig,
-          [sectionKey]: {
-            ...prevConfig[sectionKey],
-            elements: updatedElements
-          }
-        };
-      });
-    } catch (error) {
-      console.error('Error updating nested layout for section:', sectionKey, error);
-    }
+// Function to add a new component to the layout
+const addComponentToLayout = (component) => {
+  const newComponent = {
+    i: `${component.type}-${components.length + 1}`,
+    x: 0,
+    y: components.length * 2,
+    w: 4,
+    h: 3,
+    static: false,
+    type: component.type,
+    content: [], // Initialize the content for the component
+    // rows: component.type === 'table' ? 3 : undefined,
+    // cols: component.type === 'table' ? 4 : undefined
   };
+
+  setLayoutConfig(prevConfig => {
+    const updatedMain = {
+      ...prevConfig.main,
+      elements: [...prevConfig.main.elements, newComponent]
+    };
+    return { ...prevConfig, main: updatedMain };
+  });
+
+  setComponents(prevComponents => [...prevComponents, newComponent]);
+};
+
+// Effect to handle the addition of a selected component to the layout
+useEffect(() => {
+  if (selectedComponent) {
+    addComponentToLayout(selectedComponent);
+  }
+}, [selectedComponent]);
+
+// Function to update layout and content
+const onNestedLayoutChange = (newLayout, sectionKey) => {
+  console.log('Nested layout changed for section:', sectionKey, newLayout);
+
+  try {
+    // Update the elements inside the section layout
+    setLayoutConfig(prevConfig => {
+      const updatedElements = prevConfig[sectionKey].elements.map((item) => {
+        const updatedItem = newLayout.find(layoutItem => layoutItem.i === item.i);
+
+        if (updatedItem) {
+          console.log(`Updating item with key: ${item.i}`, updatedItem);
+
+          return {
+            ...item,
+            ...updatedItem,
+            isDraggable: true,
+            isResizable: true,
+            static: false,
+            // Ensure the content is also updated if it has changed
+            content: updatedItem.innerHTML,  // Replace this with actual content update logic if needed
+          };
+        } else {
+          console.warn(`No updated layout found for item with key: ${item.i}`);
+          return item;
+        }
+      });
+
+      console.log('Updated elements:', updatedElements);
+
+      return {
+        ...prevConfig,
+        [sectionKey]: {
+          ...prevConfig[sectionKey],
+          elements: updatedElements
+        }
+      };
+    });
+  } catch (error) {
+    console.error('Error updating nested layout for section:', sectionKey, error);
+  }
+};
 
   const onNestedDragStart = () => {
     console.log('Nested drag started');
@@ -174,6 +297,48 @@ function Canvas({ selectedLayout, selectedComponent }) {
   }, [isOuterGridDraggableRef.current]);
 
 
+  const onOuterLayoutChange = (newLayout) => {
+    console.log("Outer layout changed:", newLayout);
+  
+    try {
+      // Update the sections (header, footer, main, etc.) based on the new layout
+      setLayoutConfig((prevConfig) => {
+        const updatedSections = newLayout.map((updatedSection) => {
+          const existingSection = prevConfig[updatedSection.i];
+  
+          if (existingSection) {
+            console.log(`Updating section: ${updatedSection.i}`, updatedSection);
+  
+            return {
+              ...existingSection,
+              ...updatedSection,
+              // Preserve any specific properties you want
+              static: updatedSection.static !== undefined ? updatedSection.static : existingSection.static,
+              maxH: updatedSection.maxH !== undefined ? updatedSection.maxH : existingSection.maxH,
+              maxW: updatedSection.maxW !== undefined ? updatedSection.maxW : existingSection.maxW,
+              minH: updatedSection.minH !== undefined ? updatedSection.minH : existingSection.minH,
+              minW: updatedSection.minW !== undefined ? updatedSection.minW : existingSection.minW,
+            };
+          } else {
+            console.warn(`No existing section found for: ${updatedSection.i}`);
+            return existingSection;
+          }
+        });
+  
+        console.log("Updated sections:", updatedSections);
+  
+        // Rebuild the layoutConfig with the updated sections
+        return {
+          ...prevConfig,
+          ...Object.fromEntries(updatedSections.map((section) => [section.i, section])),
+        };
+      });
+    } catch (error) {
+      console.error("Error updating outer layout:", error);
+    }
+  };
+  
+
   const layout = getLayout();
 
   return (
@@ -191,7 +356,7 @@ function Canvas({ selectedLayout, selectedComponent }) {
           compactType={null}
           preventCollision={true}
           onLayoutChange={(newLayout) => {
-            console.log("Main layout changed", newLayout);
+            onOuterLayoutChange(newLayout);
           }}
         >
           {layout.map(sectionLayout => (
@@ -212,7 +377,7 @@ function Canvas({ selectedLayout, selectedComponent }) {
                 justifyContent: 'center',
                 // alignItems: 'center',
                 backgroundColor: '#f0f0f0',
-                // minHeight: '20px',
+                minHeight: '20px',
                 textAlign: 'center',
                 writingMode: sectionLayout.i.includes('vertical') ? 'vertical-lr' : 'horizontal-tb',
                 textOrientation: sectionLayout.i.includes('vertical') ? 'upright' : 'mixed',
@@ -221,7 +386,7 @@ function Canvas({ selectedLayout, selectedComponent }) {
             >
               {(
                 <ReactGridLayout
-                  // key={`nested-${sectionLayout.i}`}
+                  key={`nested-${sectionLayout.i}`}
                   className="components"
                   layout={sectionLayout.elements}
                   cols={12}
@@ -233,7 +398,6 @@ function Canvas({ selectedLayout, selectedComponent }) {
                   compactType={null}
                   preventCollision={true}
                   onDragStart={onNestedDragStart}
-                  // onDrag={onNestedDrag}
                   onDragStop={onNestedDragStop}
                   onLayoutChange={(newLayout) => onNestedLayoutChange(newLayout, sectionLayout.i)}
                 >
@@ -243,17 +407,17 @@ function Canvas({ selectedLayout, selectedComponent }) {
                       data-grid={component}
                       style={{
                         border: hoveredSection === component.i ? '2px dashed #007bff' : '2px solid transparent',
-                        border: '1px dashed #28a745',
+                        // border: '1px dashed #28a745',
                         backgroundColor: '#ffffff',
-                        // textAlign: 'center',
+                        textAlign: 'center',
                         display: 'flex',
-                        // justifyContent: 'center',
-                        // alignItems: 'center',
+                        justifyContent: 'center',
+                        alignItems: 'center',
                         padding: '1px',
-                        minHeight: '20px',
+                        minHeight: '50px',
                       }}
                     >
-                      {renderComponent(component)}
+                      {RenderComponent(component)}
                     </div>
                   ))}
                 </ReactGridLayout>
