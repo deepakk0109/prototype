@@ -1,0 +1,155 @@
+/* General Styling */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    background-color: #e0f7fa;
+    padding: 10px;
+    border-bottom: 1px solid #00796b;
+}
+
+.header-item {
+    display: flex;
+    align-items: left;
+    gap: 10px;
+    flex-grow: 1;
+}
+
+.icon-with-text {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.header-icon {
+    font-size: 24px;
+    color: #00796b;
+}
+
+.sidebar-text {
+    font-size: 16px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    position: absolute;
+    /* left: 5px; */
+    /* margin-left: 10px; */
+    top:20px;
+}
+
+.icon-with-text:hover .sidebar-text {
+    opacity: 1;
+    transform: translateX(5px);
+}
+
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+    flex-grow: 1;
+    text-align: center;
+}
+
+.navbar {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-grow: 2;
+    margin-right: 200px;
+}
+
+.navbar a {
+    text-decoration: none;
+    color: black;
+    font-weight: bold;
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+}
+
+.navbar a:hover {
+    background-color: #b2ebf2;
+    border-radius: 5px;
+}
+
+.main-content {
+    display: flex;
+    flex: 1;
+}
+
+.sidebar {
+    background-color: #b2ebf2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0;
+    transition: width 0.3s;
+}
+
+.left-sidebar {
+    width: 50px; /* Updated width */
+    border-right: 1px solid #00796b;
+}
+
+.tool-bar {
+    width: 200px; /* Updated width */
+    background-color: #b2ebf2; /* Optional: Different color to distinguish it */
+}
+
+
+.right-sidebar {
+    width: 200px; /* Updated width */
+    border-left: 1px solid #00796b;
+}
+
+.sidebar-item {
+    width: 100%;
+    text-align: left;
+    padding: 10px;
+    margin-bottom: 20px;
+    position: relative;
+    cursor: pointer;
+}
+
+.sidebar-item .icon {
+    font-size: 24px;
+    color: #00796b;
+    margin-left: 10px;
+}
+
+/* Adjust positioning of text on hover */
+.sidebar-item .sidebar-text {
+    font-size: 16px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    position: absolute;
+    left: 40px; /* Move it closer to the icon; adjust as needed */
+    margin-left: 5px; /* Adjust margin to fine-tune the position */
+}
+
+.sidebar-item:hover .sidebar-text {
+    opacity: 1;
+    transform: translateX(0); /* Adjust if necessary to position text correctly */
+}
+
+
+.canvas {
+    flex: 1;
+    background-color: white;
+    border: 1px solid #b2ebf2;
+    margin: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+}
