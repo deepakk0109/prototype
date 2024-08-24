@@ -181,11 +181,15 @@ const layouts = [
 const components = [
     { id: 1, name: 'Button', type: 'button', icon: '🔘' },
     { id: 2, name: 'Textbox', type: 'textarea', icon: '📝' },
-    { id: 3, name: 'Table', type: 'table', icon: '📊', rows: 3, cols: 4 },
-    { id: 4, name: 'Form', type: 'form', icon: '📋' },
+    // { id: 3, name: 'Table', type: 'table', icon: '📊', rows: 3, cols: 4 },
+    // { id: 4, name: 'Form', type: 'form', icon: '📋' },
   ];
 
-function Toolbar({ setSelectedLayout, setSelectedComponent }) {
+const widgets=[
+  { id: 1, name: 'Box', type: 'box', icon: '📊' },
+]
+
+function Toolbar({ setSelectedLayout, setSelectedComponent, setSelectedWidget }) {
   const location = useLocation();
 //   useEffect(() => {
 //     console.log("1stcomp",selectedComponent);
@@ -210,8 +214,29 @@ function Toolbar({ setSelectedLayout, setSelectedComponent }) {
           <h2>Components</h2>
           <ul>
           {components.map(component => (
-              <li key={component.id} onClick={() => setSelectedComponent(component)}>
+              <li key={component.id} onClick={() =>{ setSelectedComponent(null);  setTimeout(() => {
+                setSelectedComponent(component);
+              }, 0)}}>
                 {component.icon} {component.name}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      {location.pathname === '/widgets' && (
+        <>
+          <h2>Widgets</h2>
+          <ul>
+          {widgets.map(widget => (
+              <li key={widget.id} onClick={() => {
+                // Set state to null first
+                setSelectedWidget(null);
+            
+                // Then set it to the clicked widget after a slight delay
+                setTimeout(() => {
+                  setSelectedWidget(widget);
+                }, 0)}}>
+                {widget.icon} {widget.name}
               </li>
             ))}
           </ul>

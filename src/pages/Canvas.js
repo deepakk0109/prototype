@@ -2,46 +2,54 @@ import React, { useState, useRef, useEffect } from 'react';
 import GridLayout from 'react-grid-layout';
 import { WidthProvider } from 'react-grid-layout';
 import '../styles/Canvas.css';
+import ChartPopup from './ChartPopup';
 
 const ReactGridLayout = WidthProvider(GridLayout);
-
-function Canvas({ selectedLayout, selectedComponent }) {
+const defaultLayoutConfig={
+  header: { i: 'header', x: 0, y: 0, w: 12, h: 1, static: false, elements: [] },
+  horizontalNavbar: { i: 'horizontalNavbar', x: 0, y: 1, w: 12, h: 1, static: false, elements: [] },
+  verticalLeftNavbar: { i: 'verticalLeftNavbar', x: 0, y: 1, w: 1, h: 12, static: false, elements: [] },
+  verticalRightNavbar: { i: 'verticalRightNavbar', x: 11, y: 1, w: 1, h: 12, static: false, elements: [] },
+  main: { i: 'main', x: 0, y: 1, w: 12, h: 12, static: false, elements: [] },
+  footer: { i: 'footer', x: 0, y: 12, w: 12, h: 1, static: false, elements: [] }
+};
+function Canvas({ selectedLayout, selectedComponent,selectedWidget }) {
   const [components, setComponents] = useState([]);
+  const[widgets,setWidgets]=useState([]);
   const [hoveredSection, setHoveredSection] = useState(null);
-  const [layoutConfig, setLayoutConfig] = useState({
-    header: { i: 'header', x: 0, y: 0, w: 12, h: 1, static: false, elements: [] },
-    horizontalNavbar: { i: 'horizontalNavbar', x: 0, y: 1, w: 12, h: 1, static: false, elements: [] },
-    verticalLeftNavbar: { i: 'verticalLeftNavbar', x: 0, y: 1, w: 1, h: 12, static: false, elements: [] },
-    verticalRightNavbar: { i: 'verticalRightNavbar', x: 11, y: 1, w: 1, h: 12, static: false, elements: [] },
-    main: { i: 'main', x: 1, y: 1, w: 12, h: 10, static: false, elements: [] },
-    footer: { i: 'footer', x: 0, y: 12, w: 12, h: 1, static: false, elements: [] }
-  });
+  const [layoutConfig, setLayoutConfig] = useState(defaultLayoutConfig);
 
-  // const [isOuterGridDraggable, setIsOuterGridDraggable] = useState(true);
-  const isOuterGridDraggableRef = useRef(true);  // Use useRef instead of useState
+
+  const isOuterGridDraggableRef = useRef(true);
+  const isInnerGridDraggableRef = useRef(true);
   const contentRefs = useRef({});
 
-  const handleContentChange = (section) => {
-    if (contentRefs.current[section]) {
-      const newElement = contentRefs.current[section].innerHTML;
-      setLayoutConfig(prevConfig => ({
-        ...prevConfig,
-        [section]: {
-          ...prevConfig[section],
-          elements: [...prevConfig[section].elements, newElement]
-        }
-      }));
-    }
+  const setIsPopupOpen = (isOpen) => {debugger
+    isOuterGridDraggableRef.current = !isOpen;
+    isInnerGridDraggableRef.current = !isOpen;
   };
 
-  const handleBlur = (section) => {
-    handleContentChange(section);
-  };
+  // const handleContentChanges = (section) => {
+  //   if (contentRefs.current[section]) {
+  //     const newElement = contentRefs.current[section].innerHTML;
+  //     setLayoutConfig(prevConfig => ({
+  //       ...prevConfig,
+  //       [section]: {
+  //         ...prevConfig[section],
+  //         elements: [...prevConfig[section].elements, newElement]
+  //       }
+  //     }));
+  //   }
+  // };
+
+  // const handleBlur = (section) => {
+  //   handleContentChanges(section);
+  // };
 
   const getLayout = () => {
     const layout = [];
     let contentHeight = 12;
-
+    let mainwidth=12;
     if (selectedLayout) {
       if (selectedLayout.header) {
         layout.push(layoutConfig.header);
@@ -62,144 +70,76 @@ function Canvas({ selectedLayout, selectedComponent }) {
         layout.push(layoutConfig.verticalLeftNavbar);
         layoutConfig.main.x = 1;
         layoutConfig.main.w -= 1;
+        mainwidth-=1;
       }
       if (selectedLayout.isverticalrightnav === 'true') {
         layout.push(layoutConfig.verticalRightNavbar);
         layoutConfig.main.w -= 1;
+        mainwidth-=1;
       }
       layoutConfig.main.h = contentHeight;
+      layoutConfig.main.w=mainwidth;
       layout.push(layoutConfig.main);
     }
 
     return layout;
   };
 
-  // const addComponentToLayout = (component) => {
-  //   const newComponent = {
-  //     i: `${component.type}-${components.length + 1}`,
-  //     x: 0,
-  //     y: components.length * 2,
-  //     w: 4,
-  //     h: 3,
-  //     static: false,
-  //     type: component.type,
-  //     // rows:component.type==='table'?3:undefined,
-  //     // cols:component.type==='table'?4:undefined
-  //   };
-  //   setLayoutConfig(prevConfig => {
-  //     const updatedMain = {
-  //       ...prevConfig.main,
-  //       elements: [...prevConfig.main.elements, newComponent]
-  //     };
-  //     return { ...prevConfig, main: updatedMain };
-  //   });
-
-  //   setComponents(prevComponents => [...prevComponents, newComponent]);
-  // };
-
-  // useEffect(() => {
-  //   if (selectedComponent) {
-  //     addComponentToLayout(selectedComponent);
-  //   }
-  // }, [selectedComponent]);
 
 
 
-  const TableComponent = () => {
-    // Initialize table structure with a fixed number of rows and columns
-    const tableData = {
-      rows: [
-        ['Row 1 Col 1', 'Row 1 Col 2', 'Row 1 Col 3'],
-        ['Row 2 Col 1', 'Row 2 Col 2', 'Row 2 Col 3'],
-      ],
-    };
+
+  const onContentChange = (componentId, newContent) => {
+    setLayoutConfig(prevConfig => {
+      // Update the content of the component with the given ID
+      const updatedElements = prevConfig.main.elements.map(item => {
+        if (item.i === componentId) {
+          return {
+            ...item,
+            content: newContent
+          };
+        }
+        return item;
+      });
   
-    // Function to render the table
-    const renderTable = (data) => (
-      <table style={{ width: '100%', height: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr>
-            {data.rows[0].map((_, colIndex) => (
-              <th key={colIndex} style={{ border: '1px solid #ddd', padding: '8px' }}>
-                Header {colIndex + 1}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {data.rows.map((row, rowIndex) => (
-            <tr key={rowIndex}>
-              {row.map((cell, colIndex) => (
-                <td key={colIndex} style={{ border: '1px solid #ddd', padding: '8px' }}>
-                  {cell}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    );
-  
-    // Render the static table
-    return <div>{renderTable(tableData)}</div>;
+      // Return the updated layout config
+      return {
+        ...prevConfig,
+        main: {
+          ...prevConfig.main,
+          elements: updatedElements
+        }
+      };
+    });
   };
   
-  
-  
-  
-  const FormComponent = ({ initialFields = [{ label: 'Name', type: 'text', name: 'name' }] }) => {
-    const [formFields, setFormFields] = useState(initialFields);
-  
-    const addField = () => setFormFields(prev => [...prev, { label: 'Add label', type: 'text', name: `field${prev.length + 1}` }]);
-    const removeField = (index) => setFormFields(prev => prev.filter((_, i) => i !== index));
-  
-    const handleSubmit = (e) => {
-      e.preventDefault();
-      console.log('Form submitted with fields:', formFields);
-    };
-  
-    return (
-      <form style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: '10px' }} onSubmit={handleSubmit}>
-        {formFields.map((field, index) => (
-          <label key={index}>
-            {field.label}:
-            <input type={field.type} name={field.name} style={{ width: '90%' }} />
-            <button type="button" onClick={() => removeField(index)}>Remove Field</button>
-          </label>
-        ))}
-        <button type="button" onClick={addField} style={{ width: '100%', backgroundColor: 'lightblue', borderRadius: '5px' }}>
-          Add Field
-        </button>
-        <button type="submit" style={{ width: '100%', backgroundColor: 'lightblue', borderRadius: '5px' }}>
-          Submit
-        </button>
-      </form>
-    );
-  };
-  
-  const RenderComponent = ( component ) => {debugger
+
+  const RenderComponent = ( component ) => {
+    
     switch (component.type) {
       case 'button':
         return (
-          <button style={{ width: '100%', height: '100%', backgroundColor: 'lightblue', borderRadius: '5px' }}>
-            Button
+          <button style={{ width: '100%', height: '100%', backgroundColor: 'lightblue', borderRadius: '5px' }}  onClick={()=>{console.log(layout)}}>
+            {component.content || 'Submit'}
           </button>
         );
   
       case 'textarea':
         return (
-          <textarea style={{ width: '100%', height: '100%' }} rows={4} cols={20} />
+          <textarea style={{ width: '100%', height: '100%' }} rows={4} cols={20} value={component.content} onChange={(event) => onContentChange(component.i, event.target.value)}/>
         );
-  
-      case 'table':
-        return <TableComponent initialRows={component.rows} initialCols={component.cols} style={{ width: '100%', height: '100%' }}/>;
-  
-      case 'form':
-        return <FormComponent initialFields={component.fields} style={{ width: '100%', height: '100%' }}/>;
+
+        case 'box':
+          return (
+            <div style={{ flexGrow: 1, display:'flex', position: 'relative', border: '1px solid #ccc', width: '100%', height: '100%' }}>
+              <ChartPopup setIsPopupOpen={setIsPopupOpen}  style={{  border: '1px solid #ccc', width: '100%', height: '100%' }} />
+          </div>
+          );
   
       default:
         return <div>Another Component</div>;
     }
+
   };
   
 
@@ -210,14 +150,15 @@ const addComponentToLayout = (component) => {
     i: `${component.type}-${components.length + 1}`,
     x: 0,
     y: components.length * 2,
-    w: 4,
-    h: 3,
+    w: 2,
+    h: 1,
     static: false,
     type: component.type,
-    content: [], // Initialize the content for the component
+    content: '', // Initialize the content for the component
     // rows: component.type === 'table' ? 3 : undefined,
     // cols: component.type === 'table' ? 4 : undefined
   };
+  console.log("newcomp",newComponent);
 
   setLayoutConfig(prevConfig => {
     const updatedMain = {
@@ -256,8 +197,6 @@ const onNestedLayoutChange = (newLayout, sectionKey) => {
             isDraggable: true,
             isResizable: true,
             static: false,
-            // Ensure the content is also updated if it has changed
-            content: updatedItem.innerHTML,  // Replace this with actual content update logic if needed
           };
         } else {
           console.warn(`No updated layout found for item with key: ${item.i}`);
@@ -292,54 +231,86 @@ const onNestedLayoutChange = (newLayout, sectionKey) => {
     console.log('Outer grid draggable:', isOuterGridDraggableRef.current);
   };
 
-  useEffect(() => {
-    console.log('Outer grid draggable state changed:', isOuterGridDraggableRef.current);
-  }, [isOuterGridDraggableRef.current]);
-
-
   const onOuterLayoutChange = (newLayout) => {
-    console.log("Outer layout changed:", newLayout);
-  
     try {
-      // Update the sections (header, footer, main, etc.) based on the new layout
       setLayoutConfig((prevConfig) => {
         const updatedSections = newLayout.map((updatedSection) => {
           const existingSection = prevConfig[updatedSection.i];
-  
-          if (existingSection) {
-            console.log(`Updating section: ${updatedSection.i}`, updatedSection);
-  
+
+          if (existingSection && !areSectionsEqual(existingSection, updatedSection)) {
             return {
               ...existingSection,
               ...updatedSection,
-              // Preserve any specific properties you want
-              static: updatedSection.static !== undefined ? updatedSection.static : existingSection.static,
-              maxH: updatedSection.maxH !== undefined ? updatedSection.maxH : existingSection.maxH,
-              maxW: updatedSection.maxW !== undefined ? updatedSection.maxW : existingSection.maxW,
-              minH: updatedSection.minH !== undefined ? updatedSection.minH : existingSection.minH,
-              minW: updatedSection.minW !== undefined ? updatedSection.minW : existingSection.minW,
             };
-          } else {
-            console.warn(`No existing section found for: ${updatedSection.i}`);
-            return existingSection;
           }
-        });
-  
-        console.log("Updated sections:", updatedSections);
-  
-        // Rebuild the layoutConfig with the updated sections
-        return {
+          return existingSection;
+        }).filter(Boolean);
+
+        const newConfig = {
           ...prevConfig,
           ...Object.fromEntries(updatedSections.map((section) => [section.i, section])),
         };
+
+        if (!areConfigsEqual(prevConfig, newConfig)) {
+          return newConfig;
+        }
+
+        return prevConfig;
       });
     } catch (error) {
       console.error("Error updating outer layout:", error);
     }
   };
-  
 
-  const layout = getLayout();
+  const areSectionsEqual = (section1, section2) => {
+    return JSON.stringify(section1) === JSON.stringify(section2);
+  };
+
+  const areConfigsEqual = (config1, config2) => {
+    return JSON.stringify(config1) === JSON.stringify(config2);
+  };
+
+
+ 
+//  useEffect(() => {
+//     setLayoutConfig(defaultLayoutConfig);
+// }, [selectedLayout]);
+const layout = getLayout();
+
+console.log("config",layoutConfig);
+console.log("layout",layout);
+
+const addwidgetToLayout = (widget) => {
+  const newWidget = {
+    i: `${widget.type}-${widgets.length + 1}`,
+    x: 0,
+    y: widgets.length * 2,
+    w: 6,
+    h: 4,
+    static: false,
+    type: widget.type,
+    content: '', // Initialize the content for the component
+
+  };
+  console.log("new Widget",newWidget);
+
+  setLayoutConfig(prevConfig => {
+    const updatedMain = {
+      ...prevConfig.main,
+      elements: [...prevConfig.main.elements, newWidget]
+    };
+    return { ...prevConfig, main: updatedMain };
+  });
+
+  setWidgets(prevWidgets => [...prevWidgets, newWidget]);
+};
+
+// Effect to handle the addition of a selected component to the layout
+useEffect(() => {
+  if (selectedWidget) {
+    addwidgetToLayout(selectedWidget);
+  }
+}, [selectedWidget]);
 
   return (
     <div className="canvas-container">
@@ -349,15 +320,14 @@ const onNestedLayoutChange = (newLayout, sectionKey) => {
           layout={layout}
           cols={12}
           rowHeight={39}
-          width={845}
+          width={700}
           autoSize={true}
           isDraggable={isOuterGridDraggableRef.current}  // Control whether the outer grid is draggable
           isResizable={true}
           compactType={null}
           preventCollision={true}
-          onLayoutChange={(newLayout) => {
-            onOuterLayoutChange(newLayout);
-          }}
+          onLayoutChange={
+            onOuterLayoutChange}
         >
           {layout.map(sectionLayout => (
             <div
@@ -367,7 +337,7 @@ const onNestedLayoutChange = (newLayout, sectionKey) => {
               ref={(el) => contentRefs.current[sectionLayout.i] = el}
               contentEditable
               suppressContentEditableWarning={true}
-              onBlur={() => handleBlur(sectionLayout.i)}
+              // onBlur={() => handleBlur(sectionLayout.i)}
               onMouseEnter={() => setHoveredSection(sectionLayout.i)}
               onMouseLeave={() => setHoveredSection(null)}
               style={{
@@ -384,7 +354,7 @@ const onNestedLayoutChange = (newLayout, sectionKey) => {
                 padding: '10px'
               }}
             >
-              {(
+              { sectionLayout.elements.length>0 && (
                 <ReactGridLayout
                   key={`nested-${sectionLayout.i}`}
                   className="components"
@@ -393,7 +363,7 @@ const onNestedLayoutChange = (newLayout, sectionKey) => {
                   rowHeight={39}
                   width={845}
                   autoSize={true}
-                  isDraggable={true}
+                  isDraggable={isInnerGridDraggableRef.current}
                   isResizable={true}
                   compactType={null}
                   preventCollision={true}

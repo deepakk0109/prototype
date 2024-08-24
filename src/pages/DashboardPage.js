@@ -10,6 +10,7 @@ import Toolbar from './Toolbar';
 const DashboardPage = () => {
     const [selectedLayout, setSelectedLayout] = useState(null);
     const [selectedComponent, setSelectedComponent] = useState(null);
+    const [selectedWidget,setSelectedWidget]=useState(null);
 
   return (
     <div className="dashboard-container">
@@ -57,10 +58,10 @@ const DashboardPage = () => {
         </aside>
 
         <div className="tool-bar">
-        <Toolbar  setSelectedLayout={setSelectedLayout} setSelectedComponent={setSelectedComponent}/>
+        <Toolbar  setSelectedLayout={setSelectedLayout} setSelectedComponent={setSelectedComponent} setSelectedWidget={setSelectedWidget}/>
         </div>
 
-        <Canvas selectedLayout={selectedLayout} selectedComponent={selectedComponent} />
+        <Canvas selectedLayout={selectedLayout} selectedComponent={selectedComponent} selectedWidget={selectedWidget}/>
 
         <aside className="sidebar right-sidebar"></aside>
       </div>
