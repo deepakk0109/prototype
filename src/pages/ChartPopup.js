@@ -135,7 +135,7 @@ const ChartPopup = ({ setIsPopupOpen }) => {
   }, [chartType]);
 
   return (
-    <div>
+    <div style={{ display: 'flex', width: '100%', height: '100%',right: '1px' }}>
       <button
         style={{
           position: 'absolute',
@@ -206,7 +206,7 @@ const ChartPopup = ({ setIsPopupOpen }) => {
         </button>
       </Modal>
 
-      <div id="chart" style={{ display: 'flex', width: '100%', height: '100%' }}>
+      <div id="chart" style={{ display: 'flex', width: '100%', height: '100%',right: '1px' }}>
         {chartData && renderChart()}
       </div>
     </div>

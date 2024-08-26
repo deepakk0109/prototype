@@ -202,9 +202,11 @@ function Toolbar({ setSelectedLayout, setSelectedComponent, setSelectedWidget })
           <h2>Layouts</h2>
           <ul>
             {layouts.map(layout => (
-              <li key={layout.id} onClick={() => setSelectedLayout(layout)}>
-                <img src={layout.imgSrc} alt={layout.name} style={{ width: '160px', height: '150px' }} />
-              </li>
+                <li key={layout.id} onClick={ () =>{ setSelectedLayout(null);  setTimeout(() => {
+                  setSelectedLayout(layout);
+                }, 0)}}>
+                  <img src={layout.imgSrc} alt={layout.name} style={{ width: '160px', height: '150px' }} />
+                </li>
             ))}
           </ul>
         </>

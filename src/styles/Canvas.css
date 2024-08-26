@@ -23,6 +23,7 @@
   background-color: #f0f0f0;
   /* padding: 20px; */
   /* width: auto; */
+  display: flex;
   overflow: hidden; 
   box-sizing: border-box;
 }
