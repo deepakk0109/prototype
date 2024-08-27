@@ -187,6 +187,9 @@ const components = [
 
 const widgets=[
   { id: 1, name: 'Box', type: 'box', icon: '📊' },
+  { id: 2, name: 'TextBox-Widget', type: 'textBoxWidget', icon: '📝' },
+  // { id: 4, name: 'Form', type: 'form', icon: '📋' },
+
 ]
 
 function Toolbar({ setSelectedLayout, setSelectedComponent, setSelectedWidget }) {

@@ -1,14 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
 import GridLayout from 'react-grid-layout';
 import { WidthProvider } from 'react-grid-layout';
-import ChartPopup from './ChartPopup';
+import ChartPopup from '../widgets/Charts';
+import layoutService from '../services/layoutService';
+
 
 const ReactGridLayout = WidthProvider(GridLayout);
 const Preview = () => {
-    const savedLayoutString = localStorage.getItem('layout');
-      // Parse the JSON string to an object
-      const savedLayout = JSON.parse(savedLayoutString);
-    const layout=savedLayout;
+    // const savedLayoutString = localStorage.getItem('layout');
+    //   // Parse the JSON string to an object
+    //   const savedLayout = JSON.parse(savedLayoutString);
+    const [layout, setLayout] = useState([]);
+
     const setIsPopupOpen = (isOpen) => {
       };
     const RenderComponent = ( component ) => {
@@ -40,6 +43,24 @@ const Preview = () => {
         }
     
       };
+    const handleFetchLayouts = async () => {
+        try {
+          const layouts = await layoutService.getLayouts();
+          if (layouts && layouts.length > 0) {
+            setLayout(layouts[layouts.length-1].layoutItems);  // Set the first layout
+            console.log('Fetched layouts:', layouts);
+          }
+        } catch (error) {
+          console.error('Failed to fetch layouts:', error);
+        }
+      };
+    
+      // Fetch layouts when the component mounts
+      useEffect(() => {
+        handleFetchLayouts();
+      }, []);
+      
+console.log("preview layout",layout);
 
     return (
         <div className="canvas-container">
