@@ -1,0 +1,30 @@
+.column-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .column-menu-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  
+  .modal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    margin-right: -50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+  }
+  
+  .modal-overlay {
+    background-color: rgba(0, 0, 0, 0.75);
+  }
+  

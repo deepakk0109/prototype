@@ -17,13 +17,6 @@ const Input = ({ setIsPopupOpen, value, onChange }) => {
   const isConfig = location.pathname === '/configurations';
 
 
-//   X Value
-//   Organization: Input
-//   Plant: Input
-//   Block: Input
-//   Device: Input
-//   Parameter: Input
-
 
   const openModal = () => {
     setModalIsOpen(true);

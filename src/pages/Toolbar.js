@@ -8,6 +8,20 @@ import '../styles/Toolbar.css'
 //   { id: 3, name: 'Header, Footer, Sidebar', sections: ['header', 'footer', 'sidebar'] }
 // ];
 const layouts = [
+  {
+    id:0,
+    name: 'layout0',
+    imgSrc: require('../assets/images/layout0.png'),
+    header: '',
+    footer: '',
+    navbarType: '',
+    ishorizontalnav:'false',
+    isverticalleftnav:'false',
+    isverticalrightnav:'false',
+    horizontalNavbar: '',
+    verticalLeftNavbar: '',
+    verticalRightNavbar: ''
+  },
     {
       id:1,
       name: 'layout1',
@@ -181,18 +195,33 @@ const layouts = [
 const components = [
     { id: 1, name: 'Button', type: 'button', icon: '🔘' },
     { id: 2, name: 'Textbox', type: 'textarea', icon: '📝' },
-    // { id: 3, name: 'Table', type: 'table', icon: '📊', rows: 3, cols: 4 },
-    // { id: 4, name: 'Form', type: 'form', icon: '📋' },
+    { id: 3, name: 'Line', type: 'line', icon: '--' },
+    // { id: 4, name: 'Audio', type: 'audio', icon: '🎙️' },
+    // { id: 5, name: 'Form', type: 'form', icon: '📋' },
   ];
 
 const widgets=[
-  { id: 1, name: 'Box', type: 'box', icon: '📊' },
+  { id: 1, name: 'Chart', type: 'box', icon: '📊' },
   { id: 2, name: 'TextBox-Widget', type: 'textBoxWidget', icon: '📝' },
-  // { id: 4, name: 'Form', type: 'form', icon: '📋' },
+  { id: 3, name: 'Form', type: 'form', icon: '📋' },
+  { id: 4, name:'Table', type:'table',icon:'🗃️'},
+  { id: 5, name:'Checkbox', type:'checkbox',icon:'☑'},
+  { id: 6, name: 'Dropdown', type: 'dropdown', icon: '⬇️' },
+  { id: 7, name: 'Datepicker', type: 'datepicker', icon: '📅' },
+  { id: 8, name: 'Timepicker', type: 'timepicker', icon: '⏰' },
+  { id: 9, name: 'Image', type: 'image', icon: '🖼️' },
+  { id: 10, name: 'Search Bar', type: 'searchbar', icon: '🔍' },
+  { id: 11, name: 'Radio Button', type: 'radiobutton', icon: '⚫'},
+  { id: 12, name: 'File', type: 'file', icon: '📄' },
+  { id: 13, name: 'Text-editor', type: 'texteditor', icon: '📝' },
+  { id: 14, name: 'Data Grid', type: 'datagrid', icon: '🗄️' },
+  // { id: 15, name: 'Carousel', type: 'carousel', icon: '🖼️🖼️' },
+
+
 
 ]
 
-function Toolbar({ setSelectedLayout, setSelectedComponent, setSelectedWidget }) {
+function Toolbar({ setSelectedLayout, setSelectedComponent, setSelectedWidget,layout,handleSaveLayout }) {
   const location = useLocation();
 //   useEffect(() => {
 //     console.log("1stcomp",selectedComponent);
@@ -246,7 +275,8 @@ function Toolbar({ setSelectedLayout, setSelectedComponent, setSelectedWidget })
             ))}
           </ul>
         </>
-      )}
+      )}       
+      
     </div>
   );
 };

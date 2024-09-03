@@ -6,10 +6,11 @@ import axios from 'axios';
 
 Modal.setAppElement('#root');
 
-const Charts = ({ setIsPopupOpen }) => {
+const Charts = ({ setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [chartData, setChartData] = useState(null);
-  const [chartType, setChartType] = useState('Line');
+  console.log("chart type",typeOfChart);
+  const [chartType, setChartType] = useState(typeOfChart || 'Line');
   const [chartCmsModelIsOpen, setChartCmsModelIsOpen]=useState(false);
   const chartRef = useRef(null);
   const chartInstanceRef = useRef(null);
@@ -145,39 +146,60 @@ const Charts = ({ setIsPopupOpen }) => {
   const fetchData = async () => {
     try {
       const response = await axios.get('http://localhost:5000/chart-cms'); // Fetch the full data from the server
+      console.log("Response data:", response);
       const data = response.data;
-      console.log("Response data:", data);
+      console.log("Response data:", data[1]);
+      // For X-Axis
+      const xorganization = data[2].organizations.find(org => org.name === organizationx);
+      if (!xorganization) throw new Error("Organization not found");
   
-      // Find the relevant parameter data based on provided parameters
-      const organization = data[0].organizations.find(org => org.name === organizationx);
-      if (!organization) throw new Error("Organization not found");
+      const xplant = xorganization.plants.find(p => p.name === plantx);
+      if (!xplant) throw new Error("Plant not found");
   
-      const plant = organization.plants.find(p => p.name === plantx);
-      if (!plant) throw new Error("Plant not found");
+      const xblock = xplant.blocks.find(b => b.name === blockx);
+      if (!xblock) throw new Error("Block not found");
   
-      const block = plant.blocks.find(b => b.name === blockx);
-      if (!block) throw new Error("Block not found");
+      const xdevice = xblock.devices.find(d => d.name === devicex);
+      if (!xdevice) throw new Error("Device not found");
   
-      const device = block.devices.find(d => d.name === devicex);
-      if (!device) throw new Error("Device not found");
+      const xparameter = xdevice.parameters.find(p => p.name === xAxisName);
+      if (!xparameter) throw new Error("Parameter not found");
   
-      const parameter = device.parameters.find(p => p.name === xAxisName);
-      if (!parameter) throw new Error("Parameter not found");
+      // Extract X-Axis values
+      const xvalues = xparameter.values;
+      console.log("Extracted X-Axis values:", xvalues);
   
-      // Extract the values
-      const values = parameter.values;
-      console.log("Extracted values:", values);
+      // For Y-Axis
+      const yorganization = data[2].organizations.find(org => org.name === organizationy);
+      if (!yorganization) throw new Error("Organization not found");
   
-      // Map values to formatted data
-      const formattedData = values.map(item => ({
-        x: item.timestamp,  // Use timestamp as x-axis value
-        y: item.value       // Use value as y-axis value
+      const yplant = yorganization.plants.find(p => p.name === planty);
+      if (!yplant) throw new Error("Plant not found");
+  
+      const yblock = yplant.blocks.find(b => b.name === blocky);
+      if (!yblock) throw new Error("Block not found");
+  
+      const ydevice = yblock.devices.find(d => d.name === devicey);
+      if (!ydevice) throw new Error("Device not found");
+  
+      const yparameter = ydevice.parameters.find(p => p.name === yAxisName);
+      if (!yparameter) throw new Error("Parameter not found");
+  
+      // Extract Y-Axis values
+      const yvalues = yparameter.values;
+      console.log("Extracted Y-Axis values:", yvalues);
+  
+      // Map X and Y values to formatted data
+      const formattedData = xvalues.map((xItem, index) => ({
+        x: xItem.value,  // X-Axis value
+        y: yvalues[index]?.value || 0  // Y-Axis value, default to 0 if yvalues has fewer items
       }));
   
-      console.log("Formatted data:", formattedData);
+      console.log("Formatted Data:", formattedData);
   
+      // Update the chart data
       setChartData({
-        labels: formattedData.map(item => item.x), // Use timestamp for labels
+        labels: formattedData.map(item => item.x), // X-Axis labels
         datasets: [
           {
             type: chartType.toLowerCase(),
@@ -191,6 +213,7 @@ const Charts = ({ setIsPopupOpen }) => {
     }
   };
   
+
   
 
 
@@ -200,32 +223,87 @@ const Charts = ({ setIsPopupOpen }) => {
   
     const chartInstance = echarts.init(chartRef.current);
   
-    let option = {
-      color: ['#5470C6', '#91CC75', '#FAC858', '#EE6666', '#73C0DE', '#3BA272', '#FC8452'],
-      tooltip: {
-        trigger: 'axis', // Using 'axis' to show tooltip when hovering over data points
-        formatter: '{a} <br/>{b}: {c}'
-      },
-      xAxis: {
-        type: 'category', // Since x-axis uses numerical data, 'category' can plot these as distinct categories
-        data: chartData.labels, // Labels based on x values from formatted data
-        name: xAxisName, // Use the name provided for x-axis
-      },
-      yAxis: {
-        type: 'value',
-        name: yAxisName, // Use the name provided for y-axis
-      },
-      series: [{
-        name: chartData.datasets[0].name,
-        type: chartType.toLowerCase(),
-        data: chartData.datasets[0].data.map(item => item.y), // Using y values for plotting
-        symbolSize: chartType === 'scatter' ? 10 : undefined,
-      }],
-    };
+    let option;
+  
+    if (chartType.toLowerCase() === 'pie') {
+      // Pie chart configuration with category labels
+      option = {
+        color: ['#5470C6', '#91CC75', '#FAC858', '#EE6666', '#73C0DE', '#3BA272', '#FC8452'],
+        tooltip: {
+          trigger: 'item',
+          formatter: '{a} <br/>{b}: {c} ({d}%)'
+        },
+        series: [{
+          name: chartData.datasets[0].name,
+          type: 'pie',
+          radius: '50%',
+          data: chartData.datasets[0].data.map(item => ({ value: item.y, name: item.x })),
+          label: {
+            formatter: '{b}: {c} ({d}%)',
+            position: 'outside'
+          },
+          emphasis: {
+            itemStyle: {
+              shadowBlur: 10,
+              shadowOffsetX: 0,
+              shadowColor: 'rgba(0, 0, 0, 0.5)'
+            }
+          }
+        }],
+        // Adding annotations or custom labels for axis names
+        graphic: [
+          {
+            type: 'text',
+            left: 'center',
+            top: '5%',
+            style: {
+              text: xAxisName,
+              fontSize: 16,
+              fontWeight: 'bold'
+            }
+          },
+          {
+            type: 'text',
+            left: 'center',
+            bottom: '5%',
+            style: {
+              text: yAxisName,
+              fontSize: 16,
+              fontWeight: 'bold'
+            }
+          }
+        ]
+      };
+    } else {
+      // Other chart types (e.g., scatter, line, bar)
+      option = {
+        color: ['#5470C6', '#91CC75', '#FAC858', '#EE6666', '#73C0DE', '#3BA272', '#FC8452'],
+        tooltip: {
+          trigger: 'axis',
+          formatter: '{a} <br/>{b}: {c}'
+        },
+        xAxis: {
+          type: 'category',
+          data: chartData.labels,
+          name: xAxisName,
+        },
+        yAxis: {
+          type: 'value',
+          name: yAxisName,
+        },
+        series: [{
+          name: chartData.datasets[0].name,
+          type: chartType.toLowerCase(),
+          data: chartData.datasets[0].data.map(item => item.y),
+          symbolSize: chartType.toLowerCase() === 'scatter' ? 10 : undefined,
+        }],
+      };
+    }
   
     chartInstance.setOption(option);
     chartInstanceRef.current = chartInstance;
   };
+  
   
   
 
@@ -267,23 +345,29 @@ const Charts = ({ setIsPopupOpen }) => {
   }, []);
 
 
+  const updateChart = (newChartType, organizationx,
+    plantx,
+    blockx,
+    devicex,
+    parameterx,
+    organizationy,
+    planty,
+    blocky,
+    devicey,
+    parametery) => {
+    // Assuming updateWidgetChartType is defined and passed down or available globally
+    updateWidgetChart(widgetId, newChartType,organizationx,
+      plantx,
+      blockx,
+      devicex,
+      parameterx,
+      organizationy,
+      planty,
+      blocky,
+      devicey,
+      parametery);
 
-  // const [data, setData] = useState(null);
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const response = await axios.get('http://localhost:5000/chart-cms'); // Updated endpoint
-  //       setData(response.data);
-  //     } catch (error) {
-  //       console.error('Error fetching data:', error);
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, []);
-
-
+  };
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -388,7 +472,7 @@ const Charts = ({ setIsPopupOpen }) => {
                 >
                   <option value="Plant1">Plant1</option>
                   <option value="Plant2">Plant2</option>
-                  <option value="Plant3">Plant3</option>
+                  {/* <option value="Plant3">Plant3</option> */}
                 </select>
                 
                 <label>Block:</label>
@@ -398,8 +482,8 @@ const Charts = ({ setIsPopupOpen }) => {
                   style={{ marginBottom: '10px', width: '100%', padding: '5px' }}
                 >
                   <option value="Block1">Block1</option>
-                  <option value="Block2">Block2</option>
-                  <option value="Block3">Block3</option>
+                  {/* <option value="Block2">Block2</option> */}
+                  {/* <option value="Block3">Block3</option> */}
                 </select>
 
                 <label>Device:</label>
@@ -421,6 +505,7 @@ const Charts = ({ setIsPopupOpen }) => {
                 >
                   <option value="Active Power">Active Power</option>
                   <option value="Temperature">Temperature</option>
+                  <option value="Time">Time</option>
                   {/* Add other options as needed */}
                 </select>
 
@@ -445,7 +530,7 @@ const Charts = ({ setIsPopupOpen }) => {
                 >
                   <option value="Plant1">Plant1</option>
                   <option value="Plant2">Plant2</option>
-                  <option value="Plant3">Plant3</option>
+                  {/* <option value="Plant3">Plant3</option> */}
                 </select>
                 
                 <label>Block:</label>
@@ -455,8 +540,8 @@ const Charts = ({ setIsPopupOpen }) => {
                   style={{ marginBottom: '10px', width: '100%', padding: '5px' }}
                 >
                   <option value="Block1">Block1</option>
-                  <option value="Block2">Block2</option>
-                  <option value="Block3">Block3</option>
+                  {/* <option value="Block2">Block2</option> */}
+                  {/* <option value="Block3">Block3</option> */}
                 </select>
 
                 <label>Device:</label>
@@ -478,6 +563,7 @@ const Charts = ({ setIsPopupOpen }) => {
                 >
                   <option value="Active Power">Active Power</option>
                   <option value="Temperature">Temperature</option>
+                  <option value="Time">Time</option>
                   {/* Add other options as needed */}
                 </select>
                 
@@ -485,14 +571,24 @@ const Charts = ({ setIsPopupOpen }) => {
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <button
                     style={{ backgroundColor: 'white', border: '1px solid #ccc', padding: '5px 10px' }}
-                    onClick={closeChartCmsModel}
+                    onClick={()=>{closeChartCmsModel();closeModal()}}
                   >
                     Cancel
                   </button>
                   <button
                     style={{ backgroundColor: 'green', color: 'white', padding: '5px 10px' }}
                     // onClick={handleSaveChartCms}
-                    onClick={()=>{fetchData(); closeChartCmsModel()}}
+                    onClick={()=>{ updateChart(chartType,
+                      organizationx,
+                      plantx,
+                      blockx,
+                      devicex,
+                      parameterx,
+                      organizationy,
+                      planty,
+                      blocky,
+                      devicey,
+                      parametery);fetchData(); closeChartCmsModel(); closeModal()}}
                   >
                     Save widget
                   </button>

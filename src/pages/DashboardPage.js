@@ -4,18 +4,26 @@ import { FaHome, FaPlus, FaLayerGroup, FaFont, FaDatabase, FaFileAlt } from 'rea
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import '../styles/DashboardPage.css';
-import Canvas from './Canvas';
+import Canvas from './Canvas1';
 import Toolbar from './Toolbar';
 import Preview from './Preview';
+import Sidebar from './Sidebar';
+import DropdownSidebar from '../Sidebar/DropdownSidebar';
 
 const DashboardPage = () => {
   const [selectedLayout, setSelectedLayout] = useState(null);
   const [selectedComponent, setSelectedComponent] = useState(null);
   const [selectedWidget, setSelectedWidget] = useState(null);
+  const [layout,setLayout]=useState(null);
   const location = useLocation();
 
   const isPreview = location.pathname === '/preview';
-
+  const handleSaveLayout = () => {
+    // Implement your layout saving logic here
+    console.log('Layout saved:', layout);
+    // Additional saving logic...
+  };
+ console.log("Dash layout",layout);
   return (
     <div className="dashboard-container">
     {isPreview?(
@@ -51,6 +59,7 @@ const DashboardPage = () => {
                 setSelectedLayout={setSelectedLayout}
                 setSelectedComponent={setSelectedComponent}
                 setSelectedWidget={setSelectedWidget}
+                handleSaveLayout={handleSaveLayout}
               />
             </div>
           </>
@@ -60,10 +69,12 @@ const DashboardPage = () => {
           selectedLayout={selectedLayout}
           selectedComponent={selectedComponent}
           selectedWidget={selectedWidget}
+          setLayout={layout}
         />
 
-        <aside className="sidebar right-sidebar"></aside>
-      </div>
+     <aside id="sidebar" className="sidebar right-sidebar"></aside>
+
+    </div>
   )}
       
     </div>
