@@ -1,66 +1,280 @@
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import ReactDOM from 'react-dom/client';
+import { Provider } from 'react-redux';
+import { store } from '../redux/store';
+import {
+  setDropdownOptions,
+  setDropdownSource,
+  setDropdownUrl,
+  setDropdownFontSize,
+  setLabel,
+} from '../redux/slices/dropdownSlice';
+import '../styles/Dropdown.css';
+
+const Dropdown = ({ updateDropdownWidget, isConfig, widgetId, Source, Url, Options, FontSize, Label }) => {debugger
+  const dispatch = useDispatch();
+  const dropdownState = useSelector((state) => state.dropdown[widgetId]) || {};
+
+  const { dropdownOptions, dropdownSource, dropdownUrl, dropdownFontSize, label } = dropdownState;
+
+  const [showSettings, setShowSettings] = useState(false);
+
+  useEffect(() => {
+    dispatch(setDropdownOptions({ widgetId, options: Options || [] }));
+    dispatch(setDropdownSource({ widgetId, source: Source || 'manual' }));
+    dispatch(setDropdownUrl({ widgetId, url: Url || '' }));
+    dispatch(setDropdownFontSize({ widgetId, fontSize: FontSize || '16px' }));
+    dispatch(setLabel({ widgetId, label: Label || '' }));
+  }, [Options, Source, Url, FontSize, Label, dispatch, widgetId]);
+
+  useEffect(() => {
+    if (dropdownSource === 'api' && dropdownUrl) {
+      fetch(dropdownUrl)
+        .then((response) => response.json())
+        .then((data) => {
+          const apiOptions = data.map((item, index) => ({ id: index, value: item.value || item }));
+          dispatch(setDropdownOptions({ widgetId, options: apiOptions }));
+        })
+        .catch((error) => console.error('Error fetching dropdown data:', error));
+    }
+  }, [dropdownSource, dropdownUrl, dispatch, widgetId]);
+
+  const toggleSettings = () => {
+    const sidebarElement = document.getElementById('sidebar');
+
+    if (!sidebarElement) {
+      console.warn('Sidebar element not found');
+      return;
+    }
+    const root = ReactDOM.createRoot(sidebarElement);
+      root.render(
+        <React.StrictMode>
+          <Provider store={store}>
+            <DropdownSidebar
+              updateDropdownWidget={updateDropdownWidget}
+              widgetId={widgetId}
+            />
+          </Provider>
+        </React.StrictMode>
+      );
+  };
+
+  return (
+    <div className="dropdown-container" onClick={() => toggleSettings()}>
+      {isConfig && (
+        <button
+          style={{
+            position: 'absolute',
+            top: '10px',
+            right: '10px',
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '20px',
+          }}
+          onClick={toggleSettings}
+        >
+          ⚙️
+        </button>
+      )}
+
+      <label style={{ fontSize: dropdownFontSize }}>{label}</label>
+      <select className="dropdown" style={{ fontSize: dropdownFontSize }}>
+        {dropdownOptions?.map((option) => (
+          <option key={option.id} value={option.value}>
+            {option.value}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+};
+
+
+
+const DropdownSidebar = ({ updateDropdownWidget, widgetId }) => {
+  const dispatch = useDispatch();
+  const dropdownState = useSelector((state) => state.dropdown[widgetId]) || {};
+  const {
+    dropdownOptions,
+    dropdownSource,
+    dropdownUrl,
+    dropdownFontSize,
+    label,
+  } = dropdownState;
+
+  const [newOption, setNewOption] = useState('');
+
+  useEffect(() => {
+    if (dropdownSource === 'api' && dropdownUrl) {
+      fetch(dropdownUrl)
+        .then((response) => response.json())
+        .then((data) => {
+          const apiOptions = data.map((item, index) => ({ id: index, value: item.value || item }));
+          dispatch(setDropdownOptions({ widgetId, options: apiOptions }));
+        })
+        .catch((error) => console.error('Error fetching dropdown data:', error));
+    }
+  }, [dropdownSource, dropdownUrl, dispatch, widgetId]);
+
+  const addDropdownOption = () => {
+    dispatch(setDropdownOptions({ widgetId, options: [...dropdownOptions, { id: Date.now(), value: newOption }] }));
+    setNewOption('');
+  };
+
+  const removeDropdownOption = (id) => {
+    dispatch(setDropdownOptions({ widgetId, options: dropdownOptions.filter((option) => option.id !== id) }));
+  };
+
+  const handleSubmit = () => {
+    updateDropdownWidget(label, dropdownOptions, dropdownSource, dropdownUrl, dropdownFontSize, widgetId);
+  };
+
+  return (
+    <div className='dropdown-sidebar'>
+      <h2>Dropdown</h2>
+      <div style={{ marginBottom: '20px' }}>
+        <label>Label:</label>
+        <input
+          type="text"
+          value={label}
+          onChange={(e) => dispatch(setLabel({ widgetId, label: e.target.value }))}
+          placeholder="Enter dropdown label"
+          className="label-input"
+        />
+      </div>
+
+      <div style={{ marginBottom: '20px' }}>
+        <label>Font Size (enter with unit):</label>
+        <input
+          type="text"
+          value={dropdownFontSize}
+          onChange={(e) => dispatch(setDropdownFontSize({ widgetId, fontSize: e.target.value }))}
+          placeholder="Enter font size"
+          className="fontsize-input"
+        />
+      </div>
+
+      <div style={{ marginTop: '20px' }}>
+        <label>
+          <input
+            type="radio"
+            value="manual"
+            checked={dropdownSource === 'manual'}
+            onChange={() => dispatch(setDropdownSource({ widgetId, source: 'manual' }))}
+          />
+          Manually Enter
+        </label>
+        <label>
+          <input
+            type="radio"
+            value="api"
+            checked={dropdownSource === 'api'}
+            onChange={() => dispatch(setDropdownSource({ widgetId, source: 'api' }))}
+          />
+          From Api
+        </label>
+      </div>
+
+      {dropdownSource === 'api' && (
+        <div style={{ marginTop: '20px' }}>
+          <label>API URL:</label>
+          <input
+            type="text"
+            value={dropdownUrl}
+            onChange={(e) => dispatch(setDropdownUrl({ widgetId, url: e.target.value }))}
+            placeholder="Enter API URL"
+            className="url-input"
+          />
+        </div>
+      )}
+
+      {dropdownSource === 'manual' && (
+        <>
+          <div style={{ marginTop: '20px' }}>
+            <label>Options: </label>
+            <input
+              type="text"
+              value={newOption}
+              onChange={(e) => setNewOption(e.target.value)}
+              placeholder="Enter dropdown option"
+              className="option-input"
+            />
+            <button onClick={addDropdownOption} className="add-option-btn"     style={{ backgroundColor: 'green', color: 'white', border: 'none', padding: '3px 10px', cursor: 'pointer' }}>+</button>
+          </div>
+
+          <ul className="option-list">
+            {dropdownOptions.map((option) => (
+              <li key={option.id}>
+                {option.value}
+                <button onClick={() => removeDropdownOption(option.id)} className="remove-option-btn"  style={{ backgroundColor: 'red', color: 'white', border: 'none', cursor: 'pointer' }}>-</button>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      <button onClick={handleSubmit} className="submit-btn">Submit</button>
+    </div>
+  );
+};
+
+
+export { Dropdown,DropdownSidebar };
+
+
+// // src/components/Dropdown.js
 // import React, { useState, useEffect } from 'react';
-// import Modal from 'react-modal';
+// import { useDispatch, useSelector } from 'react-redux';
+// // import DropdownSettingsModal from './DropdownSettingsModal';
+// import DropdownSettingsModal from './DropdownSettingsModel';
+// import {
+//   setDropdownOptions,
+//   setDropdownSource,
+//   setDropdownUrl,
+//   setDropdownFontSize,
+//   setLabel,
+// } from '../redux/slices/dropdownSlice';
 
-// Modal.setAppElement('#root');
+// const Dropdown = ({ updateDropdownWidget, isConfig, widgetId, Source, Url, Options, FontSize, Label }) => {
+//   const dispatch = useDispatch();
+//   const { dropdownOptions, dropdownSource, dropdownUrl, dropdownFontSize, label } = useSelector((state) => state.dropdown);
 
-// // Dropdown Component
-// const Dropdown = ({ updateDropdownWidget, isConfig,widgetId,Source,Url,Options,FontSize,Label }) => {
-//     const [dropdownOptions, setDropdownOptions] = useState(Options || []);
-//     const [modalIsOpen, setModalIsOpen] = useState(false);
-//     const [dropdownSource, setDropdownSource] = useState(Source || 'manual'); // 'manual' or 'api'
-//     const [dropdownUrl, setDropdownUrl] = useState(Url || '');
-//     const [dropdownFontSize, setDropdownFontSize] = useState(FontSize || '16px');
-//     const [newOption, setNewOption] = useState('');
-//     const [label, setLabel] = useState(Label || ''); // Label for the dropdown
-  
-//     useEffect(() => {
-//       if (dropdownSource === 'api' && dropdownUrl) {
-//         fetch(dropdownUrl)
-//           .then((response) => response.json())
-//           .then((data) => {
-//             const apiOptions = data.map((item, index) => ({ id: index, value: item.value || item }));
-//             setDropdownOptions(apiOptions);
-//           })
-//           .catch((error) => console.error('Error fetching dropdown data:', error));
-//       }
-//     }, [dropdownSource, dropdownUrl]);
-  
-//     const addDropdownOption = () => {
-//       setDropdownOptions([...dropdownOptions, { id: Date.now(), value: newOption }]);
-//       setNewOption('');
-//     };
-  
-//     const removeDropdownOption = (id) => {
-//       setDropdownOptions(dropdownOptions.filter((option) => option.id !== id));
-//     };
-  
-//     const handleModalSubmit = () => {debugger
-//       if (dropdownSource === 'api' && dropdownUrl) {
-//         fetch(dropdownUrl)
-//           .then((response) => response.json())
-//           .then((data) => {
-//             const apiOptions = data.map((item, index) => ({ id: index, value: item.value || item }));
-//             setDropdownOptions(apiOptions);
-//           })
-//           .catch((error) => console.error('Error fetching dropdown data:', error));
-//       }
-  
-//           updateDropdownWidget(label,dropdownOptions, dropdownSource,dropdownUrl,dropdownFontSize,widgetId);
-  
-//       closeSettingsModal();
-//     };
-  
-//     const openSettingsModal = () => {
-//       setModalIsOpen(true);
-//     };
-  
-//     const closeSettingsModal = () => {
-//       setModalIsOpen(false);
-//     };
-  
-//     return (
-//       <div className="dropdown-container">
-//       { (isConfig &&<button
+//   const [modalIsOpen, setModalIsOpen] = useState(false);
+
+//   useEffect(() => {
+//     dispatch(setDropdownOptions(Options || []));
+//     dispatch(setDropdownSource(Source || 'manual'));
+//     dispatch(setDropdownUrl(Url || ''));
+//     dispatch(setDropdownFontSize(FontSize || '16px'));
+//     dispatch(setLabel(Label || ''));
+//   }, [Options, Source, Url, FontSize, Label, dispatch]);
+
+//   useEffect(() => {
+//     if (dropdownSource === 'api' && dropdownUrl) {
+//       fetch(dropdownUrl)
+//         .then((response) => response.json())
+//         .then((data) => {
+//           const apiOptions = data.map((item, index) => ({ id: index, value: item.value || item }));
+//           dispatch(setDropdownOptions(apiOptions));
+//         })
+//         .catch((error) => console.error('Error fetching dropdown data:', error));
+//     }
+//   }, [dropdownSource, dropdownUrl, dispatch]);
+
+//   const openSettingsModal = () => {
+//     setModalIsOpen(true);
+//   };
+
+//   const closeSettingsModal = () => {
+//     setModalIsOpen(false);
+//   };
+
+//   return (
+//     <div className="dropdown-container">
+//       {isConfig && (
+//         <button
 //           style={{
 //             position: 'absolute',
 //             top: '10px',
@@ -75,160 +289,383 @@
 //           ⚙️
 //         </button>
 //       )}
-  
-//         <label style={{fontSize:dropdownFontSize}}>{label}</label>
-//         <select className="dropdown" style={{fontSize:dropdownFontSize}}>
-//           {dropdownOptions.map((option) => (
-//             <option key={option.id} value={option.value}>
-//               {option.value}
-//             </option>
-//           ))}
-//         </select>
-  
-//         {/* Settings Modal */}
-//         <Modal
-//           isOpen={modalIsOpen}
-//           onRequestClose={closeSettingsModal}
-//           contentLabel="Settings Modal"
+
+//       <label style={{ fontSize: dropdownFontSize }}>{label}</label>
+//       <select className="dropdown" style={{ fontSize: dropdownFontSize }}>
+//         {dropdownOptions.map((option) => (
+//           <option key={option.id} value={option.value}>
+//             {option.value}
+//           </option>
+//         ))}
+//       </select>
+
+//       <DropdownSettingsModal
+//         isOpen={modalIsOpen}
+//         onRequestClose={closeSettingsModal}
+//         updateDropdownWidget={updateDropdownWidget}
+//         widgetId={widgetId}
+//       />
+//     </div>
+//   );
+// };
+
+// export { Dropdown };
+
+
+
+// // src/components/Dropdown.js
+// import React, { useEffect, useState } from 'react';
+// import Modal from 'react-modal';
+// import { useDispatch, useSelector } from 'react-redux';
+// import {
+//   setDropdownOptions,
+//   setDropdownSource,
+//   setDropdownUrl,
+//   setDropdownFontSize,
+//   setLabel,
+// } from '../redux/slices/dropdownSlice';
+
+// Modal.setAppElement('#root');
+
+// const Dropdown = ({ updateDropdownWidget, isConfig, widgetId, Source, Url, Options, FontSize, Label }) => {
+//   const dispatch = useDispatch();
+
+//   // Get state from Redux store
+//   const {
+//     dropdownOptions,
+//     dropdownSource,
+//     dropdownUrl,
+//     dropdownFontSize,
+//     label,
+//   } = useSelector((state) => state.dropdown);
+
+//   const [modalIsOpen, setModalIsOpen] = useState(false);
+//   const [newOption, setNewOption] = useState('');
+
+//   // Initialize state from props or Redux
+//   useEffect(() => {
+//     dispatch(setDropdownOptions(Options || []));
+//     dispatch(setDropdownSource(Source || 'manual'));
+//     dispatch(setDropdownUrl(Url || ''));
+//     dispatch(setDropdownFontSize(FontSize || '16px'));
+//     dispatch(setLabel(Label || ''));
+//   }, [Options, Source, Url, FontSize, Label, dispatch]);
+
+//   useEffect(() => {
+//     if (dropdownSource === 'api' && dropdownUrl) {
+//       fetch(dropdownUrl)
+//         .then((response) => response.json())
+//         .then((data) => {
+//           const apiOptions = data.map((item, index) => ({ id: index, value: item.value || item }));
+//           dispatch(setDropdownOptions(apiOptions));
+//         })
+//         .catch((error) => console.error('Error fetching dropdown data:', error));
+//     }
+//   }, [dropdownSource, dropdownUrl, dispatch]);
+
+//   const addDropdownOption = () => {
+//     dispatch(setDropdownOptions([...dropdownOptions, { id: Date.now(), value: newOption }]));
+//     setNewOption('');
+//   };
+
+//   const removeDropdownOption = (id) => {
+//     dispatch(setDropdownOptions(dropdownOptions.filter((option) => option.id !== id)));
+//   };
+
+//   const handleModalSubmit = () => {
+//     if (dropdownSource === 'api' && dropdownUrl) {
+//       fetch(dropdownUrl)
+//         .then((response) => response.json())
+//         .then((data) => {
+//           const apiOptions = data.map((item, index) => ({ id: index, value: item.value || item }));
+//           dispatch(setDropdownOptions(apiOptions));
+//         })
+//         .catch((error) => console.error('Error fetching dropdown data:', error));
+//     }
+
+//     updateDropdownWidget(label, dropdownOptions, dropdownSource, dropdownUrl, dropdownFontSize, widgetId);
+//     closeSettingsModal();
+//   };
+
+//   const openSettingsModal = () => {
+//     setModalIsOpen(true);
+//   };
+
+//   const closeSettingsModal = () => {
+//     setModalIsOpen(false);
+//   };
+
+//   return (
+//     <div className="dropdown-container">
+//       {isConfig && (
+//         <button
 //           style={{
-//             content: {
-//               top: '50%',
-//               left: '50%',
-//               right: 'auto',
-//               bottom: 'auto',
-//               marginRight: '-50%',
-//               transform: 'translate(-50%, -50%)',
-//               padding: '20px',
-//               width: '300px',
-//               textAlign: 'center',
-//             },
+//             position: 'absolute',
+//             top: '10px',
+//             right: '10px',
+//             background: 'none',
+//             border: 'none',
+//             cursor: 'pointer',
+//             fontSize: '20px',
 //           }}
+//           onClick={openSettingsModal}
 //         >
-//           <h2>Dropdown</h2>
-//           <div style={{ marginBottom: '20px' }}>
+//           ⚙️
+//         </button>
+//       )}
+
+//       <label style={{ fontSize: dropdownFontSize }}>{label}</label>
+//       <select className="dropdown" style={{ fontSize: dropdownFontSize }}>
+//         {dropdownOptions.map((option) => (
+//           <option key={option.id} value={option.value}>
+//             {option.value}
+//           </option>
+//         ))}
+//       </select>
+
+//       <Modal
+//         isOpen={modalIsOpen}
+//         onRequestClose={closeSettingsModal}
+//         contentLabel="Settings Modal"
+//         style={{
+//           content: {
+//             top: '50%',
+//             left: '50%',
+//             right: 'auto',
+//             bottom: 'auto',
+//             marginRight: '-50%',
+//             transform: 'translate(-50%, -50%)',
+//             padding: '20px',
+//             width: '300px',
+//             textAlign: 'center',
+//           },
+//         }}
+//       >
+//         <h2>Dropdown</h2>
+//         <div style={{ marginBottom: '20px' }}>
 //           <label>Label:</label>
 //           <input
 //             type="text"
 //             value={label}
-//             onChange={(e) => setLabel(e.target.value)}
+//             onChange={(e) => dispatch(setLabel(e.target.value))}
 //             placeholder="Enter dropdown label"
 //             className="label-input"
 //           />
-//           </div>
-  
-//           <div style={{ marginBottom: '20px' }}>
-//           <label >Font Size(enter with unit):</label>
+//         </div>
+
+//         <div style={{ marginBottom: '20px' }}>
+//           <label>Font Size(enter with unit):</label>
 //           <input
 //             type="text"
 //             value={dropdownFontSize}
-//             onChange={(e) => setDropdownFontSize(e.target.value)}
+//             onChange={(e) => dispatch(setDropdownFontSize(e.target.value))}
 //             placeholder="Enter font size"
 //             className="fontsize-input"
 //           />
-//           </div>
-  
-//           <div style={{ marginTop: '20px' }}>
-//             <label>
-//               <input
-//                 type="radio"
-//                 value="manual"
-//                 checked={dropdownSource === 'manual'}
-//                 onChange={() => setDropdownSource('manual')}
-//               />
-//               Manual Entry
-//             </label>
-//             <label>
-//               <input
-//                 type="radio"
-//                 value="api"
-//                 checked={dropdownSource === 'api'}
-//                 onChange={() => setDropdownSource('api')}
-//               />
-//               From API
-//             </label>
-//           </div>
-  
-//           {dropdownSource === 'api' && (
+//         </div>
+
+//         <div style={{ marginTop: '20px' }}>
+//           <label>
 //             <input
-//               type="text"
-//               value={dropdownUrl}
-//               onChange={(e) => setDropdownUrl(e.target.value)}
-//               placeholder="Enter API URL"
-//               className="backend-input"
+//               type="radio"
+//               value="manual"
+//               checked={dropdownSource === 'manual'}
+//               onChange={() => dispatch(setDropdownSource('manual'))}
 //             />
-//           )}
-  
-//           {dropdownSource === 'manual' && (
-//             <>
-//               {dropdownOptions.map((option) => (
-//                 <div key={option.id} className="input-group">
-//                   <input
-//                     type="text"
-//                     placeholder="Dropdown Option"
-//                     value={option.value}
-//                     onChange={(e) =>
-//                       setDropdownOptions(dropdownOptions.map((opt) => (opt.id === option.id ? { ...opt, value: e.target.value } : opt)))
-//                     }
-//                     className="input-field"
-//                   />
-//                   <button onClick={() => removeDropdownOption(option.id)} className="remove-btn">
-//                     -
-//                   </button>
-//                 </div>
-//               ))}
-//               <div className="add-input-group">
+//             Manual Entry
+//           </label>
+//           <label>
+//             <input
+//               type="radio"
+//               value="api"
+//               checked={dropdownSource === 'api'}
+//               onChange={() => dispatch(setDropdownSource('api'))}
+//             />
+//             From API
+//           </label>
+//         </div>
+
+//         {dropdownSource === 'api' && (
+//           <input
+//             type="text"
+//             value={dropdownUrl}
+//             onChange={(e) => dispatch(setDropdownUrl(e.target.value))}
+//             placeholder="Enter API URL"
+//             className="backend-input"
+//           />
+//         )}
+
+//         {dropdownSource === 'manual' && (
+//           <>
+//             {dropdownOptions.map((option) => (
+//               <div key={option.id} className="input-group">
 //                 <input
 //                   type="text"
-//                   value={newOption}
-//                   onChange={(e) => setNewOption(e.target.value)}
-//                   placeholder="Enter new option"
-//                   className="new-input-label"
+//                   placeholder="Dropdown Option"
+//                   value={option.value}
+//                   onChange={(e) =>
+//                     dispatch(
+//                       setDropdownOptions(dropdownOptions.map((opt) => (opt.id === option.id ? { ...opt, value: e.target.value } : opt)))
+//                     )
+//                   }
+//                   className="input-field"
 //                 />
-//                 <button onClick={addDropdownOption} className="add-btn">
-//                   +
+//                 <button onClick={() => removeDropdownOption(option.id)} className="remove-btn">
+//                   -
 //                 </button>
 //               </div>
-//             </>
-//           )}
-  
-//           <div className="modal-actions">
-//             <button onClick={handleModalSubmit} className="confirm-btn">
-//               Save
-//             </button>
-//             <button onClick={closeSettingsModal} className="cancel-btn">
-//               Cancel
-//             </button>
-//           </div>
-//         </Modal>
-//       </div>
-//     );
-//   };
-// // DropdownSidebar Component
-// const DropdownSidebar = ({
-//   label,
-//   setLabel,
-//   dropdownOptions,
-//   setDropdownOptions,
-//   dropdownSource,
-//   setDropdownSource,
-//   dropdownUrl,
-//   setDropdownUrl,
-//   dropdownFontSize,
-//   setDropdownFontSize,
-//   updateDropdownWidget,
-// }) => {
-//   const addDropdownOption = (newOption) => {
+//             ))}
+//             <div className="add-input-group">
+//               <input
+//                 type="text"
+//                 value={newOption}
+//                 onChange={(e) => setNewOption(e.target.value)}
+//                 placeholder="Enter new option"
+//                 className="new-input-label"
+//               />
+//               <button onClick={addDropdownOption} className="add-btn">
+//                 +
+//               </button>
+//             </div>
+//           </>
+//         )}
+
+//         <div className="modal-actions">
+//           <button onClick={handleModalSubmit} className="confirm-btn">
+//             Save
+//           </button>
+//           <button onClick={closeSettingsModal} className="cancel-btn">
+//             Cancel
+//           </button>
+//         </div>
+//       </Modal>
+//     </div>
+//   );
+// };
+
+// export { Dropdown };
+
+
+
+
+// import React, { useState, useEffect } from 'react';
+// import Modal from 'react-modal';
+// // import '../styles/Dropdown.css';
+
+// Modal.setAppElement('#root');
+
+// const Dropdown = ({ updateDropdownWidget, isConfig,widgetId,Source,Url,Options,FontSize,Label }) => {
+//   const [dropdownOptions, setDropdownOptions] = useState(Options || []);
+//   const [modalIsOpen, setModalIsOpen] = useState(false);
+//   const [dropdownSource, setDropdownSource] = useState(Source || 'manual'); // 'manual' or 'api'
+//   const [dropdownUrl, setDropdownUrl] = useState(Url || '');
+//   const [dropdownFontSize, setDropdownFontSize] = useState(FontSize || '16px');
+//   const [newOption, setNewOption] = useState('');
+//   const [label, setLabel] = useState(Label || ''); // Label for the dropdown
+
+//   useEffect(() => {
+//     if (dropdownSource === 'api' && dropdownUrl) {
+//       fetch(dropdownUrl)
+//         .then((response) => response.json())
+//         .then((data) => {
+//           const apiOptions = data.map((item, index) => ({ id: index, value: item.value || item }));
+//           setDropdownOptions(apiOptions);
+//         })
+//         .catch((error) => console.error('Error fetching dropdown data:', error));
+//     }
+//   }, [dropdownSource, dropdownUrl]);
+
+//   const addDropdownOption = () => {
 //     setDropdownOptions([...dropdownOptions, { id: Date.now(), value: newOption }]);
+//     setNewOption('');
 //   };
 
 //   const removeDropdownOption = (id) => {
 //     setDropdownOptions(dropdownOptions.filter((option) => option.id !== id));
 //   };
 
+//   const handleModalSubmit = () => {debugger
+//     if (dropdownSource === 'api' && dropdownUrl) {
+//       fetch(dropdownUrl)
+//         .then((response) => response.json())
+//         .then((data) => {
+//           const apiOptions = data.map((item, index) => ({ id: index, value: item.value || item }));
+//           setDropdownOptions(apiOptions);
+//         })
+//         .catch((error) => console.error('Error fetching dropdown data:', error));
+//     }
+
+//         updateDropdownWidget(label,dropdownOptions, dropdownSource,dropdownUrl,dropdownFontSize,widgetId);
+
+//     closeSettingsModal();
+//   };
+
+//   const openSettingsModal = () => {
+//     const node = document.createElement("div");
+
+// // Create a text node:
+// const textnode = document.createTextNode("Water");
+
+// // Append the text node to the "li" node:
+// node.appendChild(textnode);
+
+// // Append the "li" node to the list:
+//     document.getElementById("sidebar").appendChild(node);
+//     setModalIsOpen(true);
+//   };
+
+//   const closeSettingsModal = () => {
+//     setModalIsOpen(false);
+//   };
+
 //   return (
-//     <>
-//       <h2>Dropdown</h2>
-//       <div style={{ marginBottom: '20px' }}>
+//     <div className="dropdown-container">
+//     { (isConfig &&<button
+//         style={{
+//           position: 'absolute',
+//           top: '10px',
+//           right: '10px',
+//           background: 'none',
+//           border: 'none',
+//           cursor: 'pointer',
+//           fontSize: '20px',
+//         }}
+//         onClick={openSettingsModal}
+//       >
+//         ⚙️
+//       </button>
+//     )}
+
+//       <label style={{fontSize:dropdownFontSize}}>{label}</label>
+//       <select className="dropdown" style={{fontSize:dropdownFontSize}}>
+//         {dropdownOptions.map((option) => (
+//           <option key={option.id} value={option.value}>
+//             {option.value}
+//           </option>
+//         ))}
+//       </select>
+
+//       {/* Settings Modal */}
+//       <Modal
+//         isOpen={modalIsOpen}
+//         onRequestClose={closeSettingsModal}
+//         contentLabel="Settings Modal"
+//         style={{
+//           content: {
+//             top: '50%',
+//             left: '50%',
+//             right: 'auto',
+//             bottom: 'auto',
+//             marginRight: '-50%',
+//             transform: 'translate(-50%, -50%)',
+//             padding: '20px',
+//             width: '300px',
+//             textAlign: 'center',
+//           },
+//         }}
+//       >
+//         <h2>Dropdown</h2>
+//         <div style={{ marginBottom: '20px' }}>
 //         <label>Label:</label>
 //         <input
 //           type="text"
@@ -237,10 +674,10 @@
 //           placeholder="Enter dropdown label"
 //           className="label-input"
 //         />
-//       </div>
+//         </div>
 
-//       <div style={{ marginBottom: '20px' }}>
-//         <label>Font Size (enter with unit):</label>
+//         <div style={{ marginBottom: '20px' }}>
+//         <label >Font Size(enter with unit):</label>
 //         <input
 //           type="text"
 //           value={dropdownFontSize}
@@ -248,348 +685,84 @@
 //           placeholder="Enter font size"
 //           className="fontsize-input"
 //         />
-//       </div>
+//         </div>
 
-//       <div style={{ marginTop: '20px' }}>
-//         <label>
+//         <div style={{ marginTop: '20px' }}>
+//           <label>
+//             <input
+//               type="radio"
+//               value="manual"
+//               checked={dropdownSource === 'manual'}
+//               onChange={() => setDropdownSource('manual')}
+//             />
+//             Manual Entry
+//           </label>
+//           <label>
+//             <input
+//               type="radio"
+//               value="api"
+//               checked={dropdownSource === 'api'}
+//               onChange={() => setDropdownSource('api')}
+//             />
+//             From API
+//           </label>
+//         </div>
+
+//         {dropdownSource === 'api' && (
 //           <input
-//             type="radio"
-//             value="manual"
-//             checked={dropdownSource === 'manual'}
-//             onChange={() => setDropdownSource('manual')}
+//             type="text"
+//             value={dropdownUrl}
+//             onChange={(e) => setDropdownUrl(e.target.value)}
+//             placeholder="Enter API URL"
+//             className="backend-input"
 //           />
-//           Manual Entry
-//         </label>
-//         <label>
-//           <input
-//             type="radio"
-//             value="api"
-//             checked={dropdownSource === 'api'}
-//             onChange={() => setDropdownSource('api')}
-//           />
-//           From API
-//         </label>
-//       </div>
+//         )}
 
-//       {dropdownSource === 'api' && (
-//         <input
-//           type="text"
-//           value={dropdownUrl}
-//           onChange={(e) => setDropdownUrl(e.target.value)}
-//           placeholder="Enter API URL"
-//           className="backend-input"
-//         />
-//       )}
-
-//       {dropdownSource === 'manual' && (
-//         <>
-//           {dropdownOptions.map((option) => (
-//             <div key={option.id} className="input-group">
+//         {dropdownSource === 'manual' && (
+//           <>
+//             {dropdownOptions.map((option) => (
+//               <div key={option.id} className="input-group">
+//                 <input
+//                   type="text"
+//                   placeholder="Dropdown Option"
+//                   value={option.value}
+//                   onChange={(e) =>
+//                     setDropdownOptions(dropdownOptions.map((opt) => (opt.id === option.id ? { ...opt, value: e.target.value } : opt)))
+//                   }
+//                   className="input-field"
+//                 />
+//                 <button onClick={() => removeDropdownOption(option.id)} className="remove-btn">
+//                   -
+//                 </button>
+//               </div>
+//             ))}
+//             <div className="add-input-group">
 //               <input
 //                 type="text"
-//                 placeholder="Dropdown Option"
-//                 value={option.value}
-//                 onChange={(e) =>
-//                   setDropdownOptions(dropdownOptions.map((opt) => (opt.id === option.id ? { ...opt, value: e.target.value } : opt)))
-//                 }
-//                 className="input-field"
+//                 value={newOption}
+//                 onChange={(e) => setNewOption(e.target.value)}
+//                 placeholder="Enter new option"
+//                 className="new-input-label"
 //               />
-//               <button onClick={() => removeDropdownOption(option.id)} className="remove-btn">
-//                 -
+//               <button onClick={addDropdownOption} className="add-btn">
+//                 +
 //               </button>
 //             </div>
-//           ))}
-//           <div className="add-input-group">
-//             <input
-//               type="text"
-//               onChange={(e) => addDropdownOption(e.target.value)}
-//               placeholder="Enter new option"
-//               className="new-input-label"
-//             />
-//             <button className="add-btn">+</button>
-//           </div>
-//         </>
-//       )}
+//           </>
+//         )}
 
-//       <div className="modal-actions">
-//         <button
-//           onClick={() => updateDropdownWidget(label, dropdownOptions, dropdownSource, dropdownUrl, dropdownFontSize, 1)}
-//           className="confirm-btn"
-//         >
-//           Save
-//         </button>
-//       </div>
-//     </>
-//   );
-// };
+//         <div className="modal-actions">
+//           <button onClick={handleModalSubmit} className="confirm-btn">
+//             Save
+//           </button>
+//           <button onClick={closeSettingsModal} className="cancel-btn">
+//             Cancel
+//           </button>
+//         </div>
+//       </Modal>
 
-// // DropdownContainer Component (Parent Component)
-// const DropdownContainer = () => {
-// //   const [label, setLabel] = useState('');
-// //   const [dropdownOptions, setDropdownOptions] = useState([]);
-// //   const [dropdownSource, setDropdownSource] = useState('manual');
-// //   const [dropdownUrl, setDropdownUrl] = useState('');
-// //   const [dropdownFontSize, setDropdownFontSize] = useState('16px');
-//   const{label,dropdownOptions,dropdownSource,dropdownUrl,dropdownFontSize,updateDropdownWidget,setLabel,setDropdownOptions,setDropdownSource,setDropdownUrl,setDropdownFontSize}=Dropdown();
-
-// //   const updateDropdownWidget = (newLabel, options, source, url, fontSize, widgetId) => {
-// //     setLabel(newLabel);
-// //     setDropdownOptions(options);
-// //     setDropdownSource(source);
-// //     setDropdownUrl(url);
-// //     setDropdownFontSize(fontSize);
-// //   };
-
-//   return (
-//     <div style={{ display: 'flex' }}>
-//       {/* <Dropdown
-//         updateDropdownWidget={updateDropdownWidget}
-//         isConfig={true}
-//         widgetId={1}
-//         Source={dropdownSource}
-//         Url={dropdownUrl}
-//         Options={dropdownOptions}
-//         FontSize={dropdownFontSize}
-//         Label={label}
-//       /> */}
-//       <DropdownSidebar
-//         label={label}
-//         setLabel={setLabel}
-//         dropdownOptions={dropdownOptions}
-//         setDropdownOptions={setDropdownOptions}
-//         dropdownSource={dropdownSource}
-//         setDropdownSource={setDropdownSource}
-//         dropdownUrl={dropdownUrl}
-//         setDropdownUrl={setDropdownUrl}
-//         dropdownFontSize={dropdownFontSize}
-//         setDropdownFontSize={setDropdownFontSize}
-//         updateDropdownWidget={updateDropdownWidget}
-//       />
 //     </div>
 //   );
 // };
 
-// // Exporting all components
-// export { Dropdown, DropdownSidebar, DropdownContainer };
-
-
-
-
-import React, { useState, useEffect } from 'react';
-import Modal from 'react-modal';
-// import '../styles/Dropdown.css';
-
-Modal.setAppElement('#root');
-
-const Dropdown = ({ updateDropdownWidget, isConfig,widgetId,Source,Url,Options,FontSize,Label }) => {
-  const [dropdownOptions, setDropdownOptions] = useState(Options || []);
-  const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [dropdownSource, setDropdownSource] = useState(Source || 'manual'); // 'manual' or 'api'
-  const [dropdownUrl, setDropdownUrl] = useState(Url || '');
-  const [dropdownFontSize, setDropdownFontSize] = useState(FontSize || '16px');
-  const [newOption, setNewOption] = useState('');
-  const [label, setLabel] = useState(Label || ''); // Label for the dropdown
-
-  useEffect(() => {
-    if (dropdownSource === 'api' && dropdownUrl) {
-      fetch(dropdownUrl)
-        .then((response) => response.json())
-        .then((data) => {
-          const apiOptions = data.map((item, index) => ({ id: index, value: item.value || item }));
-          setDropdownOptions(apiOptions);
-        })
-        .catch((error) => console.error('Error fetching dropdown data:', error));
-    }
-  }, [dropdownSource, dropdownUrl]);
-
-  const addDropdownOption = () => {
-    setDropdownOptions([...dropdownOptions, { id: Date.now(), value: newOption }]);
-    setNewOption('');
-  };
-
-  const removeDropdownOption = (id) => {
-    setDropdownOptions(dropdownOptions.filter((option) => option.id !== id));
-  };
-
-  const handleModalSubmit = () => {debugger
-    if (dropdownSource === 'api' && dropdownUrl) {
-      fetch(dropdownUrl)
-        .then((response) => response.json())
-        .then((data) => {
-          const apiOptions = data.map((item, index) => ({ id: index, value: item.value || item }));
-          setDropdownOptions(apiOptions);
-        })
-        .catch((error) => console.error('Error fetching dropdown data:', error));
-    }
-
-        updateDropdownWidget(label,dropdownOptions, dropdownSource,dropdownUrl,dropdownFontSize,widgetId);
-
-    closeSettingsModal();
-  };
-
-  const openSettingsModal = () => {
-    const node = document.createElement("div");
-
-// Create a text node:
-const textnode = document.createTextNode("Water");
-
-// Append the text node to the "li" node:
-node.appendChild(textnode);
-
-// Append the "li" node to the list:
-    document.getElementById("sidebar").appendChild(node);
-    setModalIsOpen(true);
-  };
-
-  const closeSettingsModal = () => {
-    setModalIsOpen(false);
-  };
-
-  return (
-    <div className="dropdown-container">
-    { (isConfig &&<button
-        style={{
-          position: 'absolute',
-          top: '10px',
-          right: '10px',
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          fontSize: '20px',
-        }}
-        onClick={openSettingsModal}
-      >
-        ⚙️
-      </button>
-    )}
-
-      <label style={{fontSize:dropdownFontSize}}>{label}</label>
-      <select className="dropdown" style={{fontSize:dropdownFontSize}}>
-        {dropdownOptions.map((option) => (
-          <option key={option.id} value={option.value}>
-            {option.value}
-          </option>
-        ))}
-      </select>
-
-      {/* Settings Modal */}
-      <Modal
-        isOpen={modalIsOpen}
-        onRequestClose={closeSettingsModal}
-        contentLabel="Settings Modal"
-        style={{
-          content: {
-            top: '50%',
-            left: '50%',
-            right: 'auto',
-            bottom: 'auto',
-            marginRight: '-50%',
-            transform: 'translate(-50%, -50%)',
-            padding: '20px',
-            width: '300px',
-            textAlign: 'center',
-          },
-        }}
-      >
-        <h2>Dropdown</h2>
-        <div style={{ marginBottom: '20px' }}>
-        <label>Label:</label>
-        <input
-          type="text"
-          value={label}
-          onChange={(e) => setLabel(e.target.value)}
-          placeholder="Enter dropdown label"
-          className="label-input"
-        />
-        </div>
-
-        <div style={{ marginBottom: '20px' }}>
-        <label >Font Size(enter with unit):</label>
-        <input
-          type="text"
-          value={dropdownFontSize}
-          onChange={(e) => setDropdownFontSize(e.target.value)}
-          placeholder="Enter font size"
-          className="fontsize-input"
-        />
-        </div>
-
-        <div style={{ marginTop: '20px' }}>
-          <label>
-            <input
-              type="radio"
-              value="manual"
-              checked={dropdownSource === 'manual'}
-              onChange={() => setDropdownSource('manual')}
-            />
-            Manual Entry
-          </label>
-          <label>
-            <input
-              type="radio"
-              value="api"
-              checked={dropdownSource === 'api'}
-              onChange={() => setDropdownSource('api')}
-            />
-            From API
-          </label>
-        </div>
-
-        {dropdownSource === 'api' && (
-          <input
-            type="text"
-            value={dropdownUrl}
-            onChange={(e) => setDropdownUrl(e.target.value)}
-            placeholder="Enter API URL"
-            className="backend-input"
-          />
-        )}
-
-        {dropdownSource === 'manual' && (
-          <>
-            {dropdownOptions.map((option) => (
-              <div key={option.id} className="input-group">
-                <input
-                  type="text"
-                  placeholder="Dropdown Option"
-                  value={option.value}
-                  onChange={(e) =>
-                    setDropdownOptions(dropdownOptions.map((opt) => (opt.id === option.id ? { ...opt, value: e.target.value } : opt)))
-                  }
-                  className="input-field"
-                />
-                <button onClick={() => removeDropdownOption(option.id)} className="remove-btn">
-                  -
-                </button>
-              </div>
-            ))}
-            <div className="add-input-group">
-              <input
-                type="text"
-                value={newOption}
-                onChange={(e) => setNewOption(e.target.value)}
-                placeholder="Enter new option"
-                className="new-input-label"
-              />
-              <button onClick={addDropdownOption} className="add-btn">
-                +
-              </button>
-            </div>
-          </>
-        )}
-
-        <div className="modal-actions">
-          <button onClick={handleModalSubmit} className="confirm-btn">
-            Save
-          </button>
-          <button onClick={closeSettingsModal} className="cancel-btn">
-            Cancel
-          </button>
-        </div>
-      </Modal>
-      
-    </div>
-  );
-};
-
-export  {Dropdown};
+// export  {Dropdown};

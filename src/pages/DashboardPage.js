@@ -4,11 +4,9 @@ import { FaHome, FaPlus, FaLayerGroup, FaFont, FaDatabase, FaFileAlt } from 'rea
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import '../styles/DashboardPage.css';
-import Canvas from './Canvas1';
+import Canvas from './Canvas';
 import Toolbar from './Toolbar';
 import Preview from './Preview';
-import Sidebar from './Sidebar';
-import DropdownSidebar from '../Sidebar/DropdownSidebar';
 
 const DashboardPage = () => {
   const [selectedLayout, setSelectedLayout] = useState(null);

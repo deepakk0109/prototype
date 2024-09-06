@@ -3,153 +3,99 @@ import Modal from 'react-modal';
 import * as echarts from 'echarts';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
+import ReactDOM from 'react-dom/client';
+import { Provider } from 'react-redux';
+import { store } from '../redux/store';
+import {
+  setChartType,
+  // setChartData,
+  setOrganizationx,
+  setPlantx,
+  setBlockx,
+  setDevicex,
+  setParameterx,
+  setOrganizationy,
+  setPlanty,
+  setBlocky,
+  setDevicey,
+  setParametery,
+  setXAxisName,
+  setYAxisName,
+} from '../redux/slices/chartSlice'
+import { useDispatch, useSelector } from 'react-redux';
 
-Modal.setAppElement('#root');
+const Charts = ({ setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart,Ox,Px,Bx,Dx,Parameterx,Oy,Py,By,Dy,Parametery }) => {
+  const dispatch =useDispatch();
+  const chartState=useSelector((state)=>state.chart[widgetId]) || {};
 
-const Charts = ({ setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart }) => {
+  const {  chartType,  
+    // chartData,    
+    organizationx,
+    plantx,
+    blockx,
+    devicex,
+    parameterx,
+    organizationy,
+    planty,
+    blocky,
+    devicey,
+    parametery,
+    xAxisName,
+    yAxisName}=chartState;
+
+    useEffect(() => {
+      dispatch(setChartType({ widgetId, chartType: typeOfChart || 'Line' }));
+      // chartData: null,          
+      dispatch(setOrganizationx({widgetId,organizationx: Ox || 'Organization1'}))
+      dispatch(setPlantx({widgetId, plantx: Px || 'Plant1'}));
+      dispatch(setBlockx({widgetId, blockx: Bx || 'Block1'}));
+      dispatch(setDevicex({widgetId, devicex: Dx || 'Device1'}));
+      dispatch(setParameterx({widgetId, parameterx: Parameterx || 'Active Power'}));
+      dispatch(setOrganizationy({widgetId,organizationy: Oy || 'Organization1'}))
+      dispatch(setPlanty({widgetId, planty: Py || 'Plant1'}));
+      dispatch(setBlocky({widgetId, blocky: By || 'Block1'}));
+      dispatch(setDevicey({widgetId, devicey: Dy || 'Device1'}));
+      dispatch(setParametery({widgetId, parametery: Parametery || 'Temperature'}));
+      dispatch(setXAxisName({widgetId, xAxisName:Parameterx|| 'Active Power'}));
+      dispatch(setYAxisName({widgetId, yAxisName: Parametery ||'Temperature'}));
+    }, [Ox,Px,Bx,Dx,Parameterx,Oy,Py,By,Dy,Parametery, typeOfChart, dispatch, widgetId]);
+  
+
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [chartData, setChartData] = useState(null);
   console.log("chart type",typeOfChart);
-  const [chartType, setChartType] = useState(typeOfChart || 'Line');
-  const [chartCmsModelIsOpen, setChartCmsModelIsOpen]=useState(false);
+  // const [chartType, setChartType] = useState(typeOfChart || 'Line');
   const chartRef = useRef(null);
   const chartInstanceRef = useRef(null);
   const location = useLocation();
   const isConfig = location.pathname === '/configurations';
 
   //for x values
-  const [organizationx,setOrganizationx]=useState('Organization1');
-  const [plantx,setPlantx]=useState('Plant1');
-  const [blockx,setBlockx]=useState('Block1');
-  const [devicex,setDevicex]=useState('Device1');
-  const [parameterx,setParameterx]=useState('Active Power');
+  // const [organizationx,setOrganizationx]=useState('Organization1');
+  // const [plantx,setPlantx]=useState('Plant1');
+  // const [blockx,setBlockx]=useState('Block1');
+  // const [devicex,setDevicex]=useState('Device1');
+  // const [parameterx,setParameterx]=useState('Active Power');
 
-  // for Y values
-  const [organizationy,setOrganizationy]=useState('Organization1');
-  const [planty,setPlanty]=useState('Plant1');
-  const [blocky,setBlocky]=useState('Block1');
-  const [devicey,setDevicey]=useState('Device1');
-  const [parametery,setParametery]=useState('Parameter1');
+  // // for Y values
+  // const [organizationy,setOrganizationy]=useState('Organization1');
+  // const [planty,setPlanty]=useState('Plant1');
+  // const [blocky,setBlocky]=useState('Block1');
+  // const [devicey,setDevicey]=useState('Device1');
+  // const [parametery,setParametery]=useState('Parameter1');
 
-  const [xAxisName, setXAxisName] = useState('Active Power');
-  const [yAxisName, setYAxisName] = useState('Temperature');
+  // const [xAxisName, setXAxisName] = useState('Active Power');
+  // const [yAxisName, setYAxisName] = useState('Temperature');
 
-
-  const openModal = () => {
-    setModalIsOpen(true);
-    setIsPopupOpen(true);
-  };
-
-  const closeModal = () => {
-    setModalIsOpen(false);
-    setIsPopupOpen(false);
-  };
-
-  const openChartCmsModel=()=>{
-    setChartCmsModelIsOpen(true);
-  }
-  const closeChartCmsModel=()=>{
-    setChartCmsModelIsOpen(false);
-  }
-
-  const handleSaveChartCms = () => {
-    // const finalContent = displayOption === 'api' ? apiData : textBoxContent;
-    // if (onChange && typeof onChange === 'function') {
-    //   onChange({ target: { value: finalContent } }); // Ensure you're passing an object with target and value
-    // }
-    closeChartCmsModel();
-  };
-
-  // const fetchData = async () => {
-  //   try {
-  //     const response = await fetch('/assets/db.json');
-  //     if (!response.ok) {
-  //       throw new Error('Network response was not ok');
-  //     }
-  //     const data = await response.json();
-  //     console.log("data", data);
-
-  //     const formattedData = chartType === 'Scatter'
-  //       ? data.values.map(value => [value.x, value.y])
-  //       : data.values;
-
-  //     setChartData({
-  //       labels: chartType !== 'Scatter' ? data.labels : [],
-  //       datasets: [
-  //         {
-  //           type: chartType.toLowerCase(),
-  //           data: formattedData,
-  //           name: `${chartType} Plot`,
-  //         },
-  //       ],
-  //     });
-  //   } catch (error) {
-  //     console.error('Error fetching data:', error);
-  //   }
-  // };
-
-
-  // const renderChart = () => {
-  //   if (!chartData || !chartRef.current) return;
-  
-  //   const chartInstance = echarts.init(chartRef.current);
-  
-  //   // Define basic chart options
-  //   let option = {
-  //     color: ['#5470C6', '#91CC75', '#FAC858', '#EE6666', '#73C0DE', '#3BA272', '#FC8452'],
-  //     tooltip: {
-  //       trigger: 'item',
-  //       formatter: '{a} <br/>{b}: {c} ({d}%)'
-  //     },
-  //     series: [],
-  //   };
-  
-  //   // Configure options based on chart type
-  //   if (chartType === 'Pie') {
-  //     option.series.push({
-  //       name: chartData.datasets[0].name,
-  //       type: 'pie',
-  //       data: chartData.labels.map((label, index) => ({
-  //         value: chartData.datasets[0].data[index],
-  //         name: label
-  //       })),
-  //       radius: '70%',
-  //       emphasis: {
-  //         itemStyle: {
-  //           shadowBlur: 10,
-  //           shadowOffsetX: 0,
-  //           shadowColor: 'rgba(0, 0, 0, 0.5)'
-  //         }
-  //       }
-  //     });
-  //   } else {
-  //     option.xAxis = {
-  //       type: 'category',
-  //       data: chartData.labels
-  //     };
-  //     option.yAxis = {
-  //       type: 'value'
-  //     };
-  //     option.series.push({
-  //       name: chartData.datasets[0].name,
-  //       type: chartType.toLowerCase(),
-  //       data: chartData.datasets[0].data,
-  //       symbolSize: chartType === 'Scatter' ? 10 : undefined,
-  //     });
-  //   }
-  
-  //   // Render the chart
-  //   chartInstance.setOption(option);
-  //   chartInstanceRef.current = chartInstance;
-  // };
-  
   const fetchData = async () => {
+    console.log("Button clicked")
     try {
       const response = await axios.get('http://localhost:5000/chart-cms'); // Fetch the full data from the server
       console.log("Response data:", response);
       const data = response.data;
       console.log("Response data:", data[1]);
       // For X-Axis
+      debugger
       const xorganization = data[2].organizations.find(org => org.name === organizationx);
       if (!xorganization) throw new Error("Organization not found");
   
@@ -162,7 +108,7 @@ const Charts = ({ setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart }) => {
       const xdevice = xblock.devices.find(d => d.name === devicex);
       if (!xdevice) throw new Error("Device not found");
   
-      const xparameter = xdevice.parameters.find(p => p.name === xAxisName);
+      const xparameter = xdevice.parameters.find(p => p.name === parameterx);
       if (!xparameter) throw new Error("Parameter not found");
   
       // Extract X-Axis values
@@ -182,7 +128,7 @@ const Charts = ({ setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart }) => {
       const ydevice = yblock.devices.find(d => d.name === devicey);
       if (!ydevice) throw new Error("Device not found");
   
-      const yparameter = ydevice.parameters.find(p => p.name === yAxisName);
+      const yparameter = ydevice.parameters.find(p => p.name === parametery);
       if (!yparameter) throw new Error("Parameter not found");
   
       // Extract Y-Axis values
@@ -198,7 +144,7 @@ const Charts = ({ setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart }) => {
       console.log("Formatted Data:", formattedData);
   
       // Update the chart data
-      setChartData({
+     setChartData({
         labels: formattedData.map(item => item.x), // X-Axis labels
         datasets: [
           {
@@ -256,8 +202,9 @@ const Charts = ({ setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart }) => {
             type: 'text',
             left: 'center',
             top: '5%',
+            
             style: {
-              text: xAxisName,
+              text: parameterx,
               fontSize: 16,
               fontWeight: 'bold'
             }
@@ -267,7 +214,7 @@ const Charts = ({ setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart }) => {
             left: 'center',
             bottom: '5%',
             style: {
-              text: yAxisName,
+              text: parametery,
               fontSize: 16,
               fontWeight: 'bold'
             }
@@ -285,11 +232,11 @@ const Charts = ({ setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart }) => {
         xAxis: {
           type: 'category',
           data: chartData.labels,
-          name: xAxisName,
+          name: parameterx,
         },
         yAxis: {
           type: 'value',
-          name: yAxisName,
+          name: parametery,
         },
         series: [{
           name: chartData.datasets[0].name,
@@ -312,7 +259,16 @@ const Charts = ({ setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart }) => {
     if (chartType) {
       fetchData();
     }
-  }, [chartType]);
+  }, [chartType, organizationx,
+    plantx,
+    blockx,
+    devicex,
+    parameterx,
+    organizationy,
+    planty,
+    blocky,
+    devicey,
+    parametery,]);
 
   useEffect(() => {
     renderChart();
@@ -345,7 +301,7 @@ const Charts = ({ setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart }) => {
   }, []);
 
 
-  const updateChart = (newChartType, organizationx,
+  const updateChart = (widgetId,chartType, organizationx,
     plantx,
     blockx,
     devicex,
@@ -356,7 +312,7 @@ const Charts = ({ setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart }) => {
     devicey,
     parametery) => {
     // Assuming updateWidgetChartType is defined and passed down or available globally
-    updateWidgetChart(widgetId, newChartType,organizationx,
+    updateWidgetChart(widgetId, chartType,organizationx,
       plantx,
       blockx,
       devicex,
@@ -369,8 +325,30 @@ const Charts = ({ setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart }) => {
 
   };
 
+  const toggleSettings = () => {
+    const sidebarElement = document.getElementById('sidebar');
+
+    if (!sidebarElement) {
+      console.warn('Sidebar element not found');
+      return;
+    }
+    const root = ReactDOM.createRoot(sidebarElement);
+      root.render(
+        <React.StrictMode>
+          <Provider store={store}>
+            <ChartListSidebar
+              updateWidgetChart={updateWidgetChart}
+              widgetId={widgetId}
+              fetchData={fetchData}
+              updateChart={updateChart}
+            />
+          </Provider>
+        </React.StrictMode>
+      );
+  };
+
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div onClick={toggleSettings} style={{ position: 'relative', width: '100%', height: '100%' }}>
       {isConfig && (
         <button
           style={{
@@ -383,218 +361,13 @@ const Charts = ({ setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart }) => {
             fontSize: '20px',
             zIndex: 1000, // Ensure button is on top
           }}
-          onClick={openModal}
+          onClick={()=>{
+            toggleSettings();
+          }}
         >
           ⚙️
         </button>
       )}
-
-      <Modal
-        isOpen={modalIsOpen}
-        onRequestClose={closeModal}
-        contentLabel="Charts"
-        style={{
-          content: {
-            top: '50%',
-            left: '50%',
-            right: 'auto',
-            bottom: 'auto',
-            marginRight: '-50%',
-            transform: 'translate(-50%, -50%)',
-            padding: '20px',
-            width: '300px',
-            textAlign: 'center',
-          },
-        }}
-      >
-        <h2>Charts</h2>
-        <button style={{ margin: '10px' }} onClick={() =>{ setChartType('Line'); openChartCmsModel();}}>
-          Line
-        </button>
-        <br />
-        <button style={{ margin: '10px' }} onClick={() => {setChartType('Bar'); openChartCmsModel();}}>
-          Bar
-        </button>
-        <br />
-        <button style={{ margin: '10px' }} onClick={() =>{ setChartType('Scatter'); openChartCmsModel();}}>
-          Scatter
-        </button>
-        <br />
-        <button style={{ margin: '10px' }} onClick={() =>{ setChartType('Pie'); openChartCmsModel();}}>
-          Pie
-        </button>
-        <br />
-        <button style={{ margin: '10px', backgroundColor: 'red' }} onClick={closeModal}>
-          Close
-        </button>
-      </Modal>
-
-              <Modal
-                isOpen={chartCmsModelIsOpen}
-                onRequestClose={closeChartCmsModel}
-                contentLabel="Chart CMS"
-                style={{
-                  content: {
-                    top: '50%',
-                    left: '50%',
-                    right: 'auto',
-                    bottom: 'auto',
-                    marginRight: '-50%',
-                    transform: 'translate(-50%, -50%)',
-                    padding: '20px',
-                    width: '300px',
-                    textAlign: 'center',
-                    maxHeight: '80vh', // Limit the height of the modal based on viewport height
-                    overflowY: 'auto', // Enable vertical scrolling
-                    textAlign:'left',
-                  },
-                }}
-              >
-                <h2>Chart</h2>
-
-                <h3 >xAxis:</h3>
-                <label>Organization:</label>
-                <select
-                  value={organizationx}
-                  onChange={ (e) => setOrganizationx(e.target.value)}
-                  style={{ marginBottom: '10px', width: '100%', padding: '5px' }}
-                >
-                  <option value="Organization1">Organization1</option>
-                  <option value="Organization2">Organization2</option>
-                  <option value="Organization3">Organization3</option>
-                </select>
-
-                <label>Plant:</label>
-                <select
-                  value={plantx}
-                  onChange={(e) => setPlantx(e.target.value)}
-                  style={{ marginBottom: '10px', width: '100%', padding: '5px' }}
-                >
-                  <option value="Plant1">Plant1</option>
-                  <option value="Plant2">Plant2</option>
-                  {/* <option value="Plant3">Plant3</option> */}
-                </select>
-                
-                <label>Block:</label>
-                <select
-                  value={blockx}
-                  onChange={(e) => setBlockx(e.target.value)}
-                  style={{ marginBottom: '10px', width: '100%', padding: '5px' }}
-                >
-                  <option value="Block1">Block1</option>
-                  {/* <option value="Block2">Block2</option> */}
-                  {/* <option value="Block3">Block3</option> */}
-                </select>
-
-                <label>Device:</label>
-                <select
-                  value={devicex}
-                  onChange={(e) => setDevicex(e.target.value)}
-                  style={{ marginBottom: '10px', width: '100%', padding: '5px' }}
-                >
-                  <option value="Device1">Device1</option>
-                  <option value="Device2">Device2</option>
-                  <option value="Device3">Device3</option>
-                </select>
-
-                <label>Parameter:</label>
-                <select
-                value={xAxisName}
-                onChange={(e) => setXAxisName(e.target.value)}
-                style={{ marginBottom: '10px', width: '100%', padding: '5px' }}
-                >
-                  <option value="Active Power">Active Power</option>
-                  <option value="Temperature">Temperature</option>
-                  <option value="Time">Time</option>
-                  {/* Add other options as needed */}
-                </select>
-
-              
-                <h3 >yAxis:</h3>
-                <label>Organization:</label>
-                <select
-                  value={organizationy}
-                  onChange={ (e) => setOrganizationy(e.target.value)}
-                  style={{ marginBottom: '10px', width: '100%', padding: '5px' }}
-                >
-                  <option value="Org1">Organization1</option>
-                  <option value="Org2">Organization2</option>
-                  <option value="Org3">Organization3</option>
-                </select>
-
-                <label>Plant:</label>
-                <select
-                  value={planty}
-                  onChange={(e) => setPlanty(e.target.value)}
-                  style={{ marginBottom: '10px', width: '100%', padding: '5px' }}
-                >
-                  <option value="Plant1">Plant1</option>
-                  <option value="Plant2">Plant2</option>
-                  {/* <option value="Plant3">Plant3</option> */}
-                </select>
-                
-                <label>Block:</label>
-                <select
-                  value={blocky}
-                  onChange={(e) => setBlocky(e.target.value)}
-                  style={{ marginBottom: '10px', width: '100%', padding: '5px' }}
-                >
-                  <option value="Block1">Block1</option>
-                  {/* <option value="Block2">Block2</option> */}
-                  {/* <option value="Block3">Block3</option> */}
-                </select>
-
-                <label>Device:</label>
-                <select
-                  value={devicey}
-                  onChange={(e) => setDevicey(e.target.value)}
-                  style={{ marginBottom: '10px', width: '100%', padding: '5px' }}
-                >
-                  <option value="Device1">Device1</option>
-                  <option value="Device2">Device2</option>
-                  <option value="Device3">Device3</option>
-                </select>
-
-                <label>Parameter:</label>
-                <select
-                  value={yAxisName}
-                  onChange={(e) => setYAxisName(e.target.value)}
-                  style={{ marginBottom: '10px', width: '100%', padding: '5px' }}
-                >
-                  <option value="Active Power">Active Power</option>
-                  <option value="Temperature">Temperature</option>
-                  <option value="Time">Time</option>
-                  {/* Add other options as needed */}
-                </select>
-                
-
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <button
-                    style={{ backgroundColor: 'white', border: '1px solid #ccc', padding: '5px 10px' }}
-                    onClick={()=>{closeChartCmsModel();closeModal()}}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    style={{ backgroundColor: 'green', color: 'white', padding: '5px 10px' }}
-                    // onClick={handleSaveChartCms}
-                    onClick={()=>{ updateChart(chartType,
-                      organizationx,
-                      plantx,
-                      blockx,
-                      devicex,
-                      parameterx,
-                      organizationy,
-                      planty,
-                      blocky,
-                      devicey,
-                      parametery);fetchData(); closeChartCmsModel(); closeModal()}}
-                  >
-                    Save widget
-                  </button>
-                </div>
-              </Modal>
-
       <div
         id="chart"
         ref={chartRef}
@@ -604,7 +377,224 @@ const Charts = ({ setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart }) => {
   );
 };
 
-export default Charts;
+const ChartListSidebar=({updateWidgetChart,widgetId,closeModal,updateChart,fetchData,closeChartCmsModel,openChartCmsModel})=>{
+  const dispatch =useDispatch();
+  const chartState=useSelector((state)=>state.chart[widgetId]) || {};
+
+  const {  chartType,  
+    // chartData,    
+    organizationx,
+    plantx,
+    blockx,
+    devicex,
+    parameterx,
+    organizationy,
+    planty,
+    blocky,
+    devicey,
+    parametery,
+    xAxisName,
+    yAxisName}=chartState;
+
+    const  saveChart=()=>{debugger
+      // if (typeof fetchData === 'function') {
+        fetchData(); // Call fetchData function
+      // } else {
+      //   console.error('fetchData is not a function');
+      // }
+    }
+    const chartTypes = ['Line', 'Bar', 'Scatter', 'Pie'];
+
+    // Function to handle button click
+    const handleChartTypeChange = (chartType) => {
+      dispatch(setChartType({ widgetId, chartType }));
+    };
+  return(
+    <div style={{height:'100vh', overflowY:'auto', padding:'10px'}}>
+      {/* <div> */}
+        {/* <div>
+        <h2>Charts</h2>
+        <button style={{ margin: '10px' }} onClick={() =>{ dispatch(setChartType({ widgetId, chartType:'Line'}))}}>
+          Line
+        </button>
+        <br />
+        <button style={{ margin: '10px' }} onClick={() => {dispatch(setChartType({ widgetId, chartType:'Bar'})) }}>
+          Bar
+        </button>
+        <br />
+        <button style={{ margin: '10px' }} onClick={() =>{ dispatch(setChartType({ widgetId, chartType:'Scatter'}))}}>
+          Scatter
+        </button>
+        <br />
+        <button style={{ margin: '10px' }} onClick={() =>{dispatch(setChartType({ widgetId, chartType:'Pie'}))}}>
+          Pie
+        </button>
+        </div> */}
+          <h2>Charts</h2>
+        {chartTypes.map((type) => (
+        <li
+          key={type}
+          style={{ margin: '10px', cursor:'pointer' }}
+          onClick={() => handleChartTypeChange(type)}
+        >
+          {type}
+        </li>
+      ))}
+
+
+    <h4>{chartType} Chart:</h4>
+
+    <h5 >XAxis:</h5>
+    <label>Organization:</label>
+    <select
+      value={organizationx}
+      onChange={ (e) => dispatch(setOrganizationx({widgetId,organizationx:e.target.value}))}
+      style={{ marginBottom: '10px', width: '100%', padding: '5px' }}
+    >
+      <option value="Organization1">Organization1</option>
+      <option value="Organization2">Organization2</option>
+      <option value="Organization3">Organization3</option>
+    </select>
+
+    <label>Plant:</label>
+    <select
+      value={plantx}
+      onChange={(e) => dispatch(setPlantx({widgetId,planty:e.target.value}))}
+      style={{ marginBottom: '10px', width: '100%', padding: '5px' }}
+    >
+      <option value="Plant1">Plant1</option>
+      <option value="Plant2">Plant2</option>
+      {/* <option value="Plant3">Plant3</option> */}
+    </select>
+
+    <label>Block:</label>
+    <select
+      value={blockx}
+      onChange={(e) => dispatch(setBlockx({widgetId,blockx: e.target.value}))}
+      style={{ marginBottom: '10px', width: '100%', padding: '5px' }}
+    >
+      <option value="Block1">Block1</option>
+      {/* <option value="Block2">Block2</option> */}
+      {/* <option value="Block3">Block3</option> */}
+    </select>
+
+    <label>Device:</label>
+    <select
+      value={devicex}
+      onChange={(e) =>  dispatch(setDevicex({widgetId, devicex:e.target.value}))}
+      style={{ marginBottom: '10px', width: '100%', padding: '5px' }}
+    >
+      <option value="Device1">Device1</option>
+      <option value="Device2">Device2</option>
+      <option value="Device3">Device3</option>
+    </select>
+
+    <label>Parameter:</label>
+    <select
+    value={parameterx}
+    onChange={(e) =>{
+      dispatch(setParameterx({widgetId,parameterx:e.target.value}));
+        // dispatch(setXAxisName({widgetId,xAxisName:e.target.value}))
+      }
+    }
+    style={{ marginBottom: '10px', width: '100%', padding: '5px' }}
+    >
+      <option value="Active Power">Active Power</option>
+      <option value="Temperature">Temperature</option>
+      <option value="Time">Time</option>
+      {/* Add other options as needed */}
+    </select>
+
+
+    <h5>YAxis:</h5>
+    <label>Organization:</label>
+    <select
+      value={organizationy}
+      onChange={ (e) =>  dispatch(setOrganizationy({widgetId,organizationy:e.target.value}))}
+      style={{ marginBottom: '10px', width: '100%', padding: '5px' }}
+    >
+      <option value="Organization1">Organization1</option>
+      <option value="Organization2">Organization2</option>
+      <option value="Organization3">Organization3</option>
+    </select>
+
+    <label>Plant:</label>
+    <select
+      value={planty}
+      onChange={(e) => dispatch(setPlanty({widgetId,planty:e.target.value}))}
+      style={{ marginBottom: '10px', width: '100%', padding: '5px' }}
+    >
+      <option value="Plant1">Plant1</option>
+      <option value="Plant2">Plant2</option>
+      {/* <option value="Plant3">Plant3</option> */}
+    </select>
+
+    <label>Block:</label>
+    <select
+      value={blocky}
+      onChange={(e) =>dispatch(setBlocky({widgetId,blocky: e.target.value}))}
+      style={{ marginBottom: '10px', width: '100%', padding: '5px' }}
+    >
+      <option value="Block1">Block1</option>
+      {/* <option value="Block2">Block2</option> */}
+      {/* <option value="Block3">Block3</option> */}
+    </select>
+
+    <label>Device:</label>
+    <select
+      value={devicey}
+      onChange={(e) =>dispatch(setDevicey({widgetId, devicey: e.target.value}))}
+      style={{ marginBottom: '10px', width: '100%', padding: '5px' }}
+    >
+      <option value="Device1">Device1</option>
+      <option value="Device2">Device2</option>
+      <option value="Device3">Device3</option>
+    </select>
+
+    <label>Parameter:</label>
+    <select
+      value={parametery}
+      onChange={(e) =>{
+        dispatch(setParametery({widgetId,parametery:e.target.value}));
+        // dispatch(setYAxisName({widgetId,yAxisName: e.target.value}))
+      }
+      }
+      style={{ marginBottom: '10px', width: '100%', padding: '5px' }}
+    >
+      <option value="Active Power">Active Power</option>
+      <option value="Temperature">Temperature</option>
+      <option value="Time">Time</option>
+      {/* Add other options as needed */}
+    </select>
+
+
+    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <button
+        style={{ backgroundColor: 'green', color: 'white', padding: '5px 10px' }}
+        // onClick={handleSaveChartCms}
+        onClick={()=>{
+           updateChart(widgetId,chartType,
+          organizationx,
+          plantx,
+          blockx,
+          devicex,
+          parameterx,
+          organizationy,
+          planty,
+          blocky,
+          devicey,
+          parametery);saveChart()}}
+      >
+        Save widget
+      </button>
+    </div>
+    {/* </div> */}
+</div>
+    
+  )
+}
+
+export  {Charts,ChartListSidebar};
 
 
 

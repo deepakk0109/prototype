@@ -6,19 +6,19 @@ import ChartPopup from '../widgets/Charts';
 import Input from '../widgets/Input';
 import { json, useLocation } from 'react-router-dom';
 import Form from '../widgets/Form';
-import Charts from '../widgets/Charts';
+import {Charts} from '../widgets/Charts';
 import layoutService from '../services/layoutService';
-import Table from '../widgets/Table';
-import Checkbox from '../widgets/Checkbox';
+import {Table} from '../widgets/Table';
+import {Checkbox} from '../widgets/Checkbox';
 import {Dropdown} from '../widgets/Dropdown';
 import Datepicker from '../widgets/Datepicker';
 import Timepicker from '../widgets/Timepicker';
-import ImagePicker from '../widgets/ImagePicker';
+import {ImagePicker} from '../widgets/ImagePicker';
 import Searchbar from '../widgets/Searchbar';
 import ButtonComponent from '../components/Button';
 import GrapesJSButtonComponent from '../components/Button';
-import RadioButton from '../widgets/RadioButton';
-import File from '../widgets/File';
+import {RadioButton} from '../widgets/RadioButton';
+import {File} from '../widgets/File';
 import Audio from '../widgets/Audio';
 import Line from '../components/Line';
 import SimpleLine from '../components/Line';
@@ -225,7 +225,7 @@ function Canvas({ selectedLayout, selectedComponent,selectedWidget,savedlayout,i
 // Function to add a new component to the layout
 const addComponentToLayout = (component) => {
   const newComponent = {
-    i: `${component.type}-${components.length + 1}`,
+    i: `${component.type}-${Date.now()}`,
     x: 0,
     y: components.length * 2,
     w: 2,
@@ -361,7 +361,7 @@ let layout = getLayout();
 
 const addwidgetToLayout = (widget) => {
   const newWidget = {
-    i: `${widget.type}-${widgets.length + 1}`,
+    i: `${widget.type}-${Date.now()}`,
     type: widget.type,
     x: 0,
     y: widgets.length * 2,
@@ -406,6 +406,30 @@ const addwidgetToLayout = (widget) => {
     newWidget.dropdownUrl = '';
     newWidget.dropdownFontSize = '';
   }
+  if(widget.type==='radiobutton'){
+    newWidget.w=2;
+    newWidget.h=1;
+    newWidget.radioLabel='';
+    newWidget.radioOptions=[];
+    newWidget.selectedRadioOption='';
+    newWidget.radiodataSource='';
+    newWidget.radioApiUrl='';
+    newWidget.radioFontSize='';
+  }
+  if (widget.type === 'file') {
+    // Initialize properties specific to file widgets
+    newWidget.h=1;
+    newWidget.w=2;
+    newWidget.fileBackendUrl = ''; // URL to be set for file uploads
+    newWidget.fileButtonStyle = {
+      backgroundColor: '#007bff',
+      color: '#fff',
+      padding: '10px 15px',
+      border: 'none',
+      borderRadius: '5px',
+    };
+  }
+
   console.log("new Widget",newWidget);
 
   setLayoutConfig(prevConfig => {
@@ -428,7 +452,7 @@ useEffect(() => {
 
 const updateWidgetChart = (
   widgetId, 
-  newChartType,
+  chartType,
   organizationx,
   plantx,
   blockx,
@@ -445,7 +469,7 @@ const updateWidgetChart = (
       if (widget.i === widgetId) {
         return { 
           ...widget, 
-          chartType: newChartType,
+          chartType: chartType,
           xorganization: organizationx,
           xplant: plantx,
           xblock: blockx,
@@ -475,7 +499,7 @@ const updateWidgetChart = (
       widget.i === widgetId 
       ? { 
           ...widget, 
-          chartType: newChartType,
+          chartType: chartType,
           xorganization: organizationx,
           xplant: plantx,
           xblock: blockx,
@@ -527,7 +551,7 @@ const updateFormWidget = (inputs, backendLink,widgetId) => {
   );
 };
 
-const updateTableWidget = (tableDataUrl,widgetId) => {
+const updateTableWidget = (tableDataUrl,widgetId) => {debugger
   setLayoutConfig(prevConfig => {
     const updatedElements = prevConfig.main.elements.map(widget => {
       if (widget.i === widgetId) {
@@ -560,7 +584,7 @@ const updateTableWidget = (tableDataUrl,widgetId) => {
   );
 };
 
-const updateCheckboxWidget= (checkboxLabel,checkboxFlag,checkboxSize,labelFontSize,widgetId) => {debugger
+const updateCheckboxWidget= (checkboxLabel,checkboxFlag,checkboxSize,labelFontSize,widgetId) => {
   setLayoutConfig(prevConfig => {
     const updatedElements = prevConfig.main.elements.map(widget => {
       if (widget.i === widgetId) {
@@ -632,7 +656,7 @@ const updateImageWidget= (newDataUri,widgetId) => {debugger
   );
 };
 
-const updateDropdownWidget=(label,dropdownOptions, dropdownSource,dropdownUrl,dropdownFontSize,widgetId) => {
+const updateDropdownWidget=(label,dropdownOptions, dropdownSource,dropdownUrl,dropdownFontSize,widgetId) => {debugger
   setLayoutConfig(prevConfig => {
     const updatedElements = prevConfig.main.elements.map(widget => {
       if (widget.i === widgetId) {
@@ -668,6 +692,84 @@ const updateDropdownWidget=(label,dropdownOptions, dropdownSource,dropdownUrl,dr
         dropdownUrl:dropdownUrl,
         dropdownFontSize:dropdownFontSize,
         } 
+      : widget
+    )
+  );
+}
+
+const updateRadioButtonWidget=(radioLabel, radioOptions, selectedRadioOption,radiodataSource,radioApiUrl,radioFontSize, widgetId) => {
+  setLayoutConfig(prevConfig => {
+    const updatedElements = prevConfig.main.elements.map(widget => {
+      if (widget.i === widgetId) {
+        return { 
+          ...widget,
+          radioLabel:radioLabel,
+          radioOptions:radioOptions, 
+          selectedRadioOption:selectedRadioOption,
+          radiodataSource:radiodataSource,
+          radioApiUrl:radioApiUrl,
+          radioFontSize:radioFontSize,
+        };
+      }
+      return widget;
+    });
+
+    return {
+      ...prevConfig,
+      main: {
+        ...prevConfig.main,
+        elements: updatedElements,
+      },
+    };
+  });
+
+  setWidgets(prevWidgets => 
+    prevWidgets.map(widget => 
+      widget.i === widgetId 
+      ? { 
+        ...widget,
+        radioLabel:radioLabel,
+        radioOptions:radioOptions, 
+        selectedRadioOption:selectedRadioOption,
+        radiodataSource:radiodataSource,
+        radioApiUrl:radioApiUrl,
+        radioFontSize:radioFontSize,
+        } 
+      : widget
+    )
+  );
+}
+
+const updateFileWidget = (fileBackendUrl, uploadButtonStyle, widgetId) => {
+  setLayoutConfig(prevConfig => {
+    const updatedElements = prevConfig.main.elements.map(widget => {
+      if (widget.i === widgetId) {
+        return {
+          ...widget,
+          fileBackendUrl: fileBackendUrl,
+          fileButtonStyle: uploadButtonStyle,
+        };
+      }
+      return widget;
+    });
+
+    return {
+      ...prevConfig,
+      main: {
+        ...prevConfig.main,
+        elements: updatedElements,
+      },
+    };
+  });
+
+  setWidgets(prevWidgets => 
+    prevWidgets.map(widget => 
+      widget.i === widgetId 
+      ? { 
+        ...widget,
+        fileBackendUrl: fileBackendUrl,
+        fileButtonStyle: uploadButtonStyle,
+      } 
       : widget
     )
   );
@@ -734,7 +836,7 @@ const RenderComponent = ( component ) => {
       case 'box':
         return (
           <div style={{ flexGrow: 1, display:'flex', position: 'relative', border: '1px solid #ccc', width: '100%', height: '100%' }}>
-            <Charts setIsPopupOpen={setIsPopupOpen}  updateWidgetChart={updateWidgetChart} typeOfChart={component.chartType}  widgetId={component.i} style={{  border: '1px solid #ccc', width: '100%', height: '100%' }} />
+            <Charts setIsPopupOpen={setIsPopupOpen}  updateWidgetChart={updateWidgetChart} typeOfChart={component.chartType}  widgetId={component.i} Ox={component.xorganization} Px={component.xplant} Bx={component.xblock} Dx={component.xdevice} Parameterx={component.xparameter} Oy={component.yorganization} Py={component.yplant} By={component.yblock} Dy={component.ydevice} Parametery={component.yparameter} style={{  border: '1px solid #ccc', width: '100%', height: '100%' }} />
         </div>
         );
         case 'table':
@@ -779,12 +881,12 @@ const RenderComponent = ( component ) => {
 
       case 'radiobutton':
         return(
-          <RadioButton/>
+          <RadioButton updateRadioButtonWidget={updateRadioButtonWidget} label={component.radioLabel} options={component.radioOptions} selectedOption={component.selectedRadioOption} fontSize={component.radioFontSize} dataSource={component.radiodataSource} ApiUrl={component.radioApiUrl} isConfig={isConfig} widgetId={component.i}/>
         )
 
       case 'file':
         return(
-          <File/>
+          <File isConfig={isConfig} widgetId={component.i} updateFileWidget={updateFileWidget} ButtonsStyle={component.fileButtonStyle} BackendUrl={component.fileBackendUrl}/>
         )
 
       case 'audio':
@@ -799,7 +901,7 @@ const RenderComponent = ( component ) => {
 
       case 'texteditor':
         return(
-          <TextEditor isConfig={isConfig} isPreview={isPreview}/>
+          <TextEditor isConfig={isConfig} isPreview={isPreview} />
         )
 
       case 'datagrid':
@@ -858,10 +960,10 @@ if(isPreview){
   // console.log("selected layout",selectedLayout);
 }
 
-console.log("config",layoutConfig);
+// console.log("config",layoutConfig);
 console.log("layout",layout);
 
-console.log("slayout",selectedLayout);
+// console.log("slayout",selectedLayout);
 
 return (
   <div>

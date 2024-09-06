@@ -7,6 +7,8 @@ import Toolbar from './pages/Toolbar';
 import Header from './pages/Header';
 import Preview from './pages/Preview';
 import Datagrid from './widgets/DataGrid';
+import ParentComponent from './components/ParentComponent';
+import SomeOtherComponent from './components/ParentComponent';
 
 function App() {
   // const [selectedLayout, setSelectedLayout] = useState(null);
@@ -36,10 +38,10 @@ function App() {
           path="/preview"
           element={<Preview />} // Default to DashboardPage for unknown routes
         />
-              <Route
+              {/* <Route
           path="/a"
-          element={<Datagrid />} // Default to DashboardPage for unknown routes
-        />
+          element={<SomeOtherComponent />} // Default to DashboardPage for unknown routes
+        /> */}
     </Routes>
   </Router>
   );

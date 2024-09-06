@@ -1,15 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DatePicker from "react-datepicker";
-
 import "react-datepicker/dist/react-datepicker.css";
 
-// CSS Modules, react-datepicker-cssmodules.css
-// import 'react-datepicker/dist/react-datepicker-cssmodules.css';
+// Define the Datepicker component with props
+const Datepicker = ({ selectedDate, onDateChange }) => {
+  // Initialize state with the selectedDate prop or default to the current date
+  const [startDate, setStartDate] = useState(selectedDate || new Date());
 
-const Datepicker = () => {
-  const [startDate, setStartDate] = useState(new Date());
+  // Update local state when the selectedDate prop changes
+  useEffect(() => {
+    if (selectedDate) {
+      setStartDate(selectedDate);
+    }
+  }, [selectedDate]);
+
+  // Handle date changes and propagate them using the onDateChange callback
+  const handleChange = (date) => {
+    setStartDate(date);
+    if (onDateChange) {
+      onDateChange(date);
+    }
+  };
+
   return (
-    <DatePicker selected={startDate} onChange={(date) => setStartDate(date)} />
+    <DatePicker
+      selected={startDate}
+      onChange={handleChange}
+      dateFormat="MM/dd/yyyy" // Customize date format if needed
+    />
   );
 };
 

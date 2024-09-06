@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import ReactImagePickerEditor from 'react-image-picker-editor';
-import Modal from 'react-modal';
 import 'react-image-picker-editor/dist/index.css';
-
-Modal.setAppElement('#root');
+import {setImageSrc} from '../redux/slices/imagepickerSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import ReactDOM from 'react-dom/client';
+import { Provider } from 'react-redux';
+import { store } from '../redux/store';
 
 const ImagePicker = ({ isConfig, updateImageWidget, widgetId, DataUrl }) => {
-  const [imageSrc, setImageSrc] = useState(DataUrl || '');
-  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const dispatch = useDispatch();
+  const imagepickerState = useSelector((state) => state.imagepicker[widgetId]) || {};
+  const { imageSrc } = imagepickerState;
 
   const config = {
     borderRadius: '8px',
@@ -19,20 +22,38 @@ const ImagePicker = ({ isConfig, updateImageWidget, widgetId, DataUrl }) => {
   };
 
   useEffect(() => {
-    setImageSrc(DataUrl || ''); // Update imageSrc when DataUrl changes
-  }, [DataUrl]);
+    if (DataUrl && DataUrl !== imageSrc) {
+      dispatch(setImageSrc({ widgetId, imageSrc: DataUrl }));
+    }
+  }, [DataUrl, imageSrc, dispatch, widgetId]);
 
-  const openModal = () => setModalIsOpen(true);
-  const closeModal = () => setModalIsOpen(false);
-
-  const saveImage = (newDataUri) => {debugger
-    setImageSrc(newDataUri); // Update imageSrc state
+  const saveImage = (newDataUri) => {
+    dispatch(setImageSrc({ widgetId, imageSrc: newDataUri }));
     updateImageWidget(newDataUri, widgetId); // Notify parent component
+  };
+
+  const toggleSettings = () => {
+    const sidebarElement = document.getElementById('sidebar');
+    if (!sidebarElement) {
+      console.warn('Sidebar element not found');
+      return;
+    }
+    const root = ReactDOM.createRoot(sidebarElement);
+    root.render(
+      <React.StrictMode>
+        <Provider store={store}>
+          <ImagePickerSidebar
+            updateImageWidget={updateImageWidget}
+            widgetId={widgetId}
+            saveImage={saveImage}
+          />
+        </Provider>
+      </React.StrictMode>
+    );
   };
 
   return (
     <div className="container" style={{ position: 'relative', width: '100%', height: '100%' }}>
-      {/* Resizable Image in Normal Screen */}
       <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         {imageSrc ? (
           <img
@@ -44,21 +65,20 @@ const ImagePicker = ({ isConfig, updateImageWidget, widgetId, DataUrl }) => {
               objectFit: 'contain',
               cursor: isConfig ? 'pointer' : 'default',
             }}
-            onClick={isConfig ? openModal : null}
+            onClick={toggleSettings}
           />
         ) : (
           <ReactImagePickerEditor
             config={config}
             imageSrcProp={imageSrc}
-            imageChanged={(newDataUri) => {
-              setImageSrc(newDataUri);
-              saveImage(newDataUri); // Save the image when it changes
+            imageChanged={(newDataUri) =>{
+              dispatch(setImageSrc({widgetId,imageSrc:newDataUri}));
+              updateImageWidget(imageSrc,widgetId); 
             }}
           />
         )}
       </div>
 
-      {/* Button to Open Modal */}
       {isConfig && (
         <button
           style={{
@@ -70,63 +90,46 @@ const ImagePicker = ({ isConfig, updateImageWidget, widgetId, DataUrl }) => {
             cursor: 'pointer',
             fontSize: '20px',
           }}
-          onClick={openModal}
+          onClick={toggleSettings}
         >
           ⚙️
         </button>
       )}
-
-      {/* Modal for Image Editor */}
-      <Modal
-        isOpen={modalIsOpen}
-        onRequestClose={closeModal}
-        contentLabel="Image Picker Editor"
-        style={{
-          content: {
-            top: '25%',
-            left: '50%',
-            right: 'auto',
-            bottom: '25%',
-            padding: '20px',
-            width: 'auto',
-            height: 'auto',
-            maxWidth: '90vw',
-            maxHeight: '90vh',
-            textAlign: 'center',
-            overflowY: 'auto',
-          },
-          overlay: {
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          },
-        }}
-      >
-        <h2>Select an Image</h2>
-        <ReactImagePickerEditor
-          config={config}
-          imageSrcProp={imageSrc}
-          imageChanged={(newDataUri) => {
-            setImageSrc(newDataUri);
-            saveImage(newDataUri); // Save the image when it changes
-          }}
-        />
-        <button
-          onClick={closeModal}
-          style={{
-            marginTop: '20px',
-            padding: '10px 20px',
-            fontSize: '16px',
-            cursor: 'pointer',
-            backgroundColor: '#007bff',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-          }}
-        >
-          Close
-        </button>
-      </Modal>
     </div>
   );
 };
 
-export default ImagePicker;
+
+
+const ImagePickerSidebar=({widgetId,updateImageWidget,saveImage})=>{
+  const dispatch=useDispatch();
+  const imagepickerState=useSelector((state)=>state.imagepicker[widgetId]) || {};
+  const {imageSrc}=imagepickerState;
+  const config = {
+    borderRadius: '8px',
+    language: 'en',
+    width: '100px',
+    height: '100px',
+    objectFit: 'contain',
+    compressInitial: null,
+  };
+  // const saveImage = (newDataUri) => {
+  //   dispatch(setImageSrc({widgetId,imageSrc:newDataUri})); // Update imageSrc state
+  //   updateImageWidget(newDataUri, widgetId); // Notify parent component
+  // };
+  return(
+   <div>
+   <h2>Select an Image</h2>
+   <ReactImagePickerEditor
+     config={config}
+     imageSrcProp={imageSrc}
+     imageChanged={(newDataUri) => {
+      dispatch(setImageSrc({widgetId,imageSrc:newDataUri}));
+      updateImageWidget(imageSrc,widgetId); 
+     }}
+   />
+   </div>
+  );
+}
+
+export {ImagePicker,ImagePickerSidebar};
