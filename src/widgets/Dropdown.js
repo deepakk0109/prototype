@@ -11,12 +11,17 @@ import {
   setLabel,
 } from '../redux/slices/dropdownSlice';
 import '../styles/Dropdown.css';
+import Modal from 'react-modal';
+import { StyleModel } from './StyleModel';
+import { setWidgetStyles } from '../redux/slices/dropdownSlice';
 
-const Dropdown = ({ updateDropdownWidget, isConfig, widgetId, Source, Url, Options, FontSize, Label }) => {debugger
+Modal.setAppElement('#root');
+
+const Dropdown = ({ updateDropdownWidget, isConfig, widgetId, Source, Url, Options, FontSize, Label,Styles }) => {debugger
   const dispatch = useDispatch();
   const dropdownState = useSelector((state) => state.dropdown[widgetId]) || {};
 
-  const { dropdownOptions, dropdownSource, dropdownUrl, dropdownFontSize, label } = dropdownState;
+  const { dropdownOptions, dropdownSource, dropdownUrl, dropdownFontSize, label,widgetStyles } = dropdownState;
 
   const [showSettings, setShowSettings] = useState(false);
 
@@ -26,7 +31,18 @@ const Dropdown = ({ updateDropdownWidget, isConfig, widgetId, Source, Url, Optio
     dispatch(setDropdownUrl({ widgetId, url: Url || '' }));
     dispatch(setDropdownFontSize({ widgetId, fontSize: FontSize || '16px' }));
     dispatch(setLabel({ widgetId, label: Label || '' }));
-  }, [Options, Source, Url, FontSize, Label, dispatch, widgetId]);
+    dispatch(setWidgetStyles({ widgetId, widgetStyles: Styles || {
+      height:'',
+      width:'',
+      backgroundColor: '',
+      color: '',
+      padding: '',
+      margin:'',
+      fontSize:'',
+      border: '',
+      borderRadius: '',
+    } }));
+  }, [Options, Source, Url, FontSize, Label, dispatch, widgetId,Styles]);
 
   useEffect(() => {
     if (dropdownSource === 'api' && dropdownUrl) {
@@ -61,7 +77,7 @@ const Dropdown = ({ updateDropdownWidget, isConfig, widgetId, Source, Url, Optio
   };
 
   return (
-    <div className="dropdown-container" onClick={() => toggleSettings()}>
+    <div className="dropdown-container" onClick={() => toggleSettings()} style={{...widgetStyles}}>
       {isConfig && (
         <button
           style={{
@@ -80,7 +96,7 @@ const Dropdown = ({ updateDropdownWidget, isConfig, widgetId, Source, Url, Optio
       )}
 
       <label style={{ fontSize: dropdownFontSize }}>{label}</label>
-      <select className="dropdown" style={{ fontSize: dropdownFontSize }}>
+      <select className="dropdown" style={{color:widgetStyles?.color, fontSize: dropdownFontSize }}>
         {dropdownOptions?.map((option) => (
           <option key={option.id} value={option.value}>
             {option.value}
@@ -102,6 +118,7 @@ const DropdownSidebar = ({ updateDropdownWidget, widgetId }) => {
     dropdownUrl,
     dropdownFontSize,
     label,
+    widgetStyles,
   } = dropdownState;
 
   const [newOption, setNewOption] = useState('');
@@ -128,7 +145,17 @@ const DropdownSidebar = ({ updateDropdownWidget, widgetId }) => {
   };
 
   const handleSubmit = () => {
-    updateDropdownWidget(label, dropdownOptions, dropdownSource, dropdownUrl, dropdownFontSize, widgetId);
+    updateDropdownWidget(label, dropdownOptions, dropdownSource, dropdownUrl, dropdownFontSize, widgetId,widgetStyles);
+  };
+
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  
+  const openSettingsModal = () => {
+    setModalIsOpen(true);
+  };
+
+  const closeSettingsModal = () => {
+    setModalIsOpen(false);
   };
 
   return (
@@ -214,8 +241,39 @@ const DropdownSidebar = ({ updateDropdownWidget, widgetId }) => {
           </ul>
         </>
       )}
+       <div style={{ marginBottom: '10px' }}>Add styles  <button onClick={openSettingsModal}  style={{ backgroundColor: 'green', color: 'white', border: 'none', padding: '1px 10px', cursor: 'pointer' }}>+</button></div>
+        <button onClick={()=>{handleSubmit(); closeSettingsModal()}}  style={{ backgroundColor: 'blue', borderRadius: '5px', color: 'white', border: 'none', padding: '10px 15px', cursor: 'pointer' }} >
+          Save
+        </button>
+        <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={closeSettingsModal}
+        contentLabel="Settings Modal"
+        style={{
+          overlay: {
+            backgroundColor: 'rgba(0, 0, 0, 0)', // Transparent background
+          },
+          content: {
+            top: '50%',
+            right: '10px', // Distance from the right edge
+            left: 'auto', // Remove left alignment
+            bottom: 'auto',
+            marginRight: '0', // No margin on the right
+            transform: 'translateY(-50%)', // Center vertically
+            width: '200px',
+            pointerEvents: 'auto', // Enable pointer events for the modal content
+            overflowY:'auto',
+          },
+        }}
+      >
+        <StyleModel widgetId={widgetId} setWidgetStyles={setWidgetStyles} state={dropdownState}/>
+        <button onClick={()=>{handleSubmit(); closeSettingsModal()}} style={{ backgroundColor: 'green', color: 'white', border: 'none', padding: '5px 10px', cursor: 'pointer' }} >
+          Save
+        </button>
+        <button  onClick={()=>{ closeSettingsModal()}} style={{alignItems:'right', backgroundColor: 'red', color: 'white', border: 'none', padding: '5px 10px', cursor: 'pointer' }}>Cancel</button>
+        </Modal>
 
-      <button onClick={handleSubmit} className="submit-btn">Submit</button>
+
     </div>
   );
 };

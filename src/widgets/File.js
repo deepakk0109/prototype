@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Modal from 'react-modal';
 import axios from 'axios';
+
 import {setFile,
   setFileBackendUrl,
   setUploadButtonStyle,
@@ -9,6 +10,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { store } from '../redux/store';
+Modal.setAppElement('#root');
 function File({ updateFileWidget,isConfig, ButtonsStyle,widgetId,BackendUrl }) {
   const dispatch=useDispatch();
   const fileState=useSelector((state)=>state.file[widgetId]) || {};
@@ -17,11 +19,15 @@ function File({ updateFileWidget,isConfig, ButtonsStyle,widgetId,BackendUrl }) {
   useEffect(() => {
     dispatch(setFileBackendUrl({ widgetId, fileBackendUrl: BackendUrl || '' }));
     dispatch(setUploadButtonStyle({ widgetId, uploadButtonStyle: ButtonsStyle || {
+      height:'',
+      width:'',
       backgroundColor: '#007bff',
-      color: '#fff',
-      padding: '10px 15px',
-      border: 'none',
-      borderRadius: '5px',
+      color: '',
+      padding: '',
+      margin:'',
+      fontSize:'',
+      border: '',
+      borderRadius: '',
     } }));
   }, [ButtonsStyle, widgetId, BackendUrl, dispatch]);
 
@@ -81,7 +87,7 @@ function File({ updateFileWidget,isConfig, ButtonsStyle,widgetId,BackendUrl }) {
       );
   };
   return (
-    <div className="file" onClick={toggleSettings} style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div className="file" onClick={toggleSettings} style={{...uploadButtonStyle,position: 'relative', width: '100%', height: '100%' }}>
       {isConfig && (
         <button
           style={{
@@ -116,42 +122,123 @@ function File({ updateFileWidget,isConfig, ButtonsStyle,widgetId,BackendUrl }) {
   );
 }
 
-const modalStyles = {
-  content: {
-    top: '50%',
-    left: '50%',
-    right: 'auto',
-    bottom: 'auto',
-    marginRight: '-50%',
-    transform: 'translate(-50%, -50%)',
-    padding: '20px',
-    boxShadow: '0 5px 15px rgba(0, 0, 0, 0.3)',
-    width: '400px',
-  },
-};
+// const modalStyles = {
+//   content: {
+//     top: '50%',
+//     left: '50%',
+//     right: 'auto',
+//     bottom: 'auto',
+//     marginRight: '-50%',
+//     transform: 'translate(-50%, -50%)',
+//     padding: '20px',
+//     boxShadow: '0 5px 15px rgba(0, 0, 0, 0.3)',
+//     width: '400px',
+//   },
+// };
 
 const FileSidebar =({updateFileWidget,widgetId})=>{
   const dispatch=useDispatch();
   const fileState=useSelector((state)=>state.file[widgetId]) || {};
   const {file,fileBackendUrl,uploadButtonStyle}=fileState;
+  const [modalIsOpen, setModalIsOpen] = useState(false);
   function saveSettings() {
     updateFileWidget(fileBackendUrl, uploadButtonStyle, widgetId);
   }
+
+  const openSettingsModal = () => {
+    setModalIsOpen(true);
+  };
+
+  const closeSettingsModal = () => {
+    setModalIsOpen(false);
+  };
   return(
-    <div>
-        <h2>File Upload Configuration</h2>
+    <div style={{padding:'10px', margin:'10px'}}>
+        <h2 >File Upload Configuration</h2>
         <div style={{ marginBottom: '10px' }}>
-          <label>Backend URL:</label>
+          <label>Backend URL to save file:</label>
           <input
             type="text"
             value={fileBackendUrl}
             onChange={(e) => dispatch(setFileBackendUrl({ widgetId, fileBackendUrl: e.target.value}))}
+            style={{
+              width: '100%',
+              padding: '8px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+          }}
+          />
+        </div>
+
+        <br></br>
+        <div style={{ marginBottom: '10px' }}>Add styles  <button onClick={openSettingsModal}  style={{ backgroundColor: 'green', color: 'white', border: 'none', padding: '1px 10px', cursor: 'pointer' }}>+</button></div>
+        <button onClick={()=>{saveSettings(); closeSettingsModal()}}  style={{ backgroundColor: 'blue', borderRadius: '5px', color: 'white', border: 'none', padding: '10px 15px', cursor: 'pointer' }} >
+          Save
+        </button>
+        <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={closeSettingsModal}
+        contentLabel="Settings Modal"
+        style={{
+          overlay: {
+            backgroundColor: 'rgba(0, 0, 0, 0)', // Transparent background
+            // pointerEvents: 'none', // Disable pointer events on overlay
+          },
+          content: {
+            top: '50%',
+            right: '10px', // Distance from the right edge
+            left: 'auto', // Remove left alignment
+            bottom: 'auto',
+            marginRight: '0', // No margin on the right
+            transform: 'translateY(-50%)', // Center vertically
+            // padding: '20px',
+            width: '200px',
+            // textAlign: 'center',
+            pointerEvents: 'auto', // Enable pointer events for the modal content
+            overflowY:'auto',
+          },
+        }}
+      >
+       {/* {modalIsOpen &&( */}
+        <>
+        <div style={{ marginBottom: '10px' }}>
+          <label>Height:</label>
+          <input
+            type="text"
+            value={uploadButtonStyle.height}
+            onChange={(e) =>
+              dispatch(setUploadButtonStyle({ widgetId,
+                uploadButtonStyle: {
+                  ...uploadButtonStyle,
+                  height: e.target.value,
+                },
+              })
+            )
+            }
             style={{ marginLeft: '10px', padding: '5px' }}
           />
         </div>
 
         <div style={{ marginBottom: '10px' }}>
-          <label>Upload Button Background:</label>
+          <label>Width:</label>
+          <input
+            type="text"
+            value={uploadButtonStyle.width}
+            onChange={(e) =>
+              dispatch(setUploadButtonStyle({ widgetId,
+                uploadButtonStyle: {
+                  ...uploadButtonStyle,
+                  width: e.target.value,
+                },
+              })
+            )
+            }
+            style={{ marginLeft: '10px', padding: '5px' }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '10px' }}>
+          <label>Background color:</label>
           <input
             type="color"
             value={uploadButtonStyle.backgroundColor}
@@ -169,7 +256,7 @@ const FileSidebar =({updateFileWidget,widgetId})=>{
         </div>
 
         <div style={{ marginBottom: '10px' }}>
-          <label>Upload Button Text Color:</label>
+          <label>Color:</label>
           <input
             type="color"
             value={uploadButtonStyle.color}
@@ -184,11 +271,131 @@ const FileSidebar =({updateFileWidget,widgetId})=>{
             }
             style={{ marginLeft: '10px', padding: '5px' }}
           />
+          
+      
+        </div>
+        <div style={{ marginBottom: '10px' }}>
+          <label>Font Size</label>
+          <input
+            type="text"
+            value={uploadButtonStyle.fontSize}
+            onChange={(e) =>
+              dispatch(setUploadButtonStyle({ widgetId,
+                uploadButtonStyle: {
+                  ...uploadButtonStyle,
+                  fontSize: e.target.value,
+                },
+              })
+            )
+            }
+            style={{
+              width: '100%',
+              padding: '8px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+          }}
+          />
         </div>
 
-        <button onClick={saveSettings} >
+        <div style={{ marginBottom: '10px' }}>
+          <label>Padding:</label>
+          <input
+            type="text"
+            value={uploadButtonStyle.padding}
+            onChange={(e) =>
+              dispatch(setUploadButtonStyle({ widgetId,
+                uploadButtonStyle: {
+                  ...uploadButtonStyle,
+                  padding: e.target.value,
+                },
+              })
+            )
+            }
+            style={{
+              width: '100%',
+              padding: '8px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+          }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '10px' }}>
+          <label>Margin:</label>
+          <input
+            type="text"
+            value={uploadButtonStyle.margin}
+            onChange={(e) =>
+              dispatch(setUploadButtonStyle({ widgetId,
+                uploadButtonStyle: {
+                  ...uploadButtonStyle,
+                  margin: e.target.value,
+                },
+              })
+            )
+            }
+            style={{
+              width: '100%',
+              padding: '8px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+          }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '10px' }}>
+          <label>Border:</label>
+          <input
+            type="text"
+            value={uploadButtonStyle.border}
+            onChange={(e) =>
+              dispatch(setUploadButtonStyle({ widgetId,
+                uploadButtonStyle: {
+                  ...uploadButtonStyle,
+                  border: e.target.value,
+                },
+              })
+            )
+            }
+            style={{
+              width: '100%',
+              padding: '8px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+          }}
+          />
+        </div>
+        <div style={{ marginBottom: '10px' }}>
+          <label>Border Radius:</label>
+          <input
+            type="text"
+            value={uploadButtonStyle.borderRadius}
+            onChange={(e) =>
+              dispatch(setUploadButtonStyle({ widgetId,
+                uploadButtonStyle: {
+                  ...uploadButtonStyle,
+                  borderRadius: e.target.value,
+                },
+              })
+            )
+            }
+            style={{
+              width: '100%',
+              padding: '8px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+          }}
+          />
+        </div>
+      
+        <button onClick={()=>{saveSettings(); closeSettingsModal()}} style={{ backgroundColor: 'green', color: 'white', border: 'none', padding: '5px 10px', cursor: 'pointer' }} >
           Save
         </button>
+        <button  onClick={()=>{ closeSettingsModal()}} style={{alignItems:'right', backgroundColor: 'red', color: 'white', border: 'none', padding: '5px 10px', cursor: 'pointer' }}>Cancel</button>
+        </>
+        {/* )}  */}
+        </Modal>
+
     </div>
   )
 }
@@ -197,45 +404,3 @@ const FileSidebar =({updateFileWidget,widgetId})=>{
 export  {File, FileSidebar};
 
 
-// import React, { useState } from 'react';
-// import axios from 'axios';
-// import '../styles/File.css'; // Make sure you have the CSS file for styling
-
-// function File() {
-//   const [file, setFile] = useState(null); // Initialize with null
-
-//   function handleChange(event) {
-//     setFile(event.target.files[0]); // Set the selected file
-//   }
-
-//   function handleSubmit(event) {
-//     event.preventDefault();
-//     const url = 'http://localhost:3000/uploadFile';
-//     const formData = new FormData();
-//     formData.append('file', file);
-//     formData.append('fileName', file.name);
-//     const config = {
-//       headers: {
-//         'content-type': 'multipart/form-data',
-//       },
-//     };
-//     axios.post(url, formData, config).then((response) => {
-//       console.log(response.data);
-//     });
-//   }
-
-//   return (
-//     <div className="file" style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%' }}>
-//       <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center' }}>
-//         <input type="file" onChange={handleChange} style={{ marginRight: '10px' }} />
-//         {file && (
-//           <button type="submit">
-//             Upload
-//           </button>
-//         )}
-//       </form>
-//     </div>
-//   );
-// }
-
-// export default File;

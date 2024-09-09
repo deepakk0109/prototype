@@ -1,0 +1,23 @@
+/* DatePicker.css */
+.react-datepicker__time-container {
+    width: 100%; /* Ensure the time container spans the full width */
+  }
+  
+  .react-datepicker__time {
+    max-height: 200px; /* Adjust the max height to fit your design */
+  }
+  
+  .react-datepicker__time-box {
+    display: flex; 
+    flex-direction: column;
+  }
+  
+  .react-datepicker__time-list {
+    max-height: 100%;
+    overflow-y: auto; /* Enable vertical scrolling */
+  }
+  
+  .react-datepicker__time-list-item {
+    height: 40px; /* Adjust the height of each time item */
+  }
+  

@@ -1,21 +1,40 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { setCheckboxState } from '../redux/slices/checkboxSlice';
+import { setCheckboxState,setWidgetStyles, setwidgetStyles } from '../redux/slices/checkboxSlice';
 import { useLocation } from 'react-router-dom';
 import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { store } from '../redux/store';
+import Modal from 'react-modal';
+import { StyleModel } from './StyleModel';
 
-const Checkbox = ({ updateCheckboxWidget, widgetId, flag: propFlag, label: propLabel, size: propSize, labelfontsize: propLabelFontSize }) => {debugger
+Modal.setAppElement('#root');
+const Checkbox = ({ updateCheckboxWidget, widgetId, flag: propFlag, label: propLabel, size: propSize, labelfontsize: propLabelFontSize,Styles }) => {
     const dispatch = useDispatch();
-    const checkboxState = useSelector((state) => state.checkbox[widgetId]) || {
-        label: propLabel || '',
-        flag: propFlag || false,
-        size: propSize || '24px',
-        labelFontSize: propLabelFontSize || '16px',
-    };
+    const State=useSelector((state) => state.checkbox[widgetId]) || {}
 
-    const { label, flag, size, labelFontSize } = checkboxState;
+    const { label, flag, size, labelFontSize,widgetStyles } = State;
+    useEffect(() => {
+        dispatch(setCheckboxState({ widgetId,
+            label: propLabel || '',
+            flag: propFlag || false,
+            size: propSize || '24px',
+            labelFontSize: propLabelFontSize || '16px',
+    }));
+        dispatch(setWidgetStyles({ widgetId, widgetStyles: Styles || {
+          height:'',
+          width:'',
+          backgroundColor: '',
+          color: '',
+          padding: '',
+          margin:'',
+          fontSize:'',
+          border: '',
+          borderRadius: '',
+        } }));
+      }, [Styles, widgetId, dispatch]);
+    
+
     const location = useLocation();
     const isConfig = location.pathname === '/configurations';
 
@@ -47,11 +66,11 @@ const Checkbox = ({ updateCheckboxWidget, widgetId, flag: propFlag, label: propL
             size,
             labelFontSize,
         }));
-        updateCheckboxWidget(label, !flag, size, labelFontSize, widgetId);
+        updateCheckboxWidget(label, !flag, size, labelFontSize, widgetId,widgetStyles);
     };
 
     return (
-        <div onClick={toggleSettings} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', position: 'relative' }}>
+        <div onClick={toggleSettings} style={{...widgetStyles, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', position: 'relative' }}>
             {isConfig && (
                 <button
                     style={{
@@ -93,13 +112,14 @@ const Checkbox = ({ updateCheckboxWidget, widgetId, flag: propFlag, label: propL
 const CheckboxSidebar = ({ widgetId, updateCheckboxWidget }) => {
     const dispatch = useDispatch();
     const checkboxState = useSelector((state) => state.checkbox[widgetId]) || {
-        label: 'Default Label',
-        flag: false,
-        size: '24px',
-        labelFontSize: '16px',
+        // label: 'Enter Label',
+        // flag: false,
+        // size: '24px',
+        // labelFontSize: '16px',
+        // widgetStyles:Styles,
     };
 
-    const { label, flag, size, labelFontSize } = checkboxState;
+    const { label, flag, size, labelFontSize,widgetStyles } = checkboxState;
 
     const handleInputChange = (key, value) => {
         dispatch(setCheckboxState({
@@ -109,8 +129,17 @@ const CheckboxSidebar = ({ widgetId, updateCheckboxWidget }) => {
         }));
     };
 
-    const handleSave = () => {
-        updateCheckboxWidget(label, flag, size, labelFontSize, widgetId);
+    const handleSave = () => {debugger
+        updateCheckboxWidget(label, flag, size, labelFontSize, widgetId,widgetStyles);
+    };
+    const [modalIsOpen, setModalIsOpen] = useState(false);
+  
+    const openSettingsModal = () => {
+      setModalIsOpen(true);
+    };
+  
+    const closeSettingsModal = () => {
+      setModalIsOpen(false);
     };
 
     return (
@@ -183,20 +212,238 @@ const CheckboxSidebar = ({ widgetId, updateCheckboxWidget }) => {
             </div>
 
             <div>
-                <button
-                    onClick={handleSave}
-                    style={{
-                        padding: '10px 15px',
-                        margin: '5px',
-                        border: 'none',
-                        borderRadius: '4px',
-                        backgroundColor: '#007bff',
-                        color: 'white',
-                        cursor: 'pointer',
-                    }}
-                >
-                    Save
-                </button>
+
+
+            <div style={{ marginBottom: '10px' }}>Add styles  <button onClick={openSettingsModal}  style={{ backgroundColor: 'green', color: 'white', border: 'none', padding: '1px 10px', cursor: 'pointer' }}>+</button></div>
+        <button onClick={()=>{handleSave(); closeSettingsModal()}}  style={{ backgroundColor: 'blue', borderRadius: '5px', color: 'white', border: 'none', padding: '10px 15px', cursor: 'pointer' }} >
+          Save
+        </button>
+        <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={closeSettingsModal}
+        contentLabel="Settings Modal"
+        style={{
+          overlay: {
+            backgroundColor: 'rgba(0, 0, 0, 0)', // Transparent background
+            // pointerEvents: 'none', // Disable pointer events on overlay
+          },
+          content: {
+            top: '50%',
+            right: '10px', // Distance from the right edge
+            left: 'auto', // Remove left alignment
+            bottom: 'auto',
+            marginRight: '0', // No margin on the right
+            transform: 'translateY(-50%)', // Center vertically
+            // padding: '20px',
+            width: '200px',
+            // textAlign: 'center',
+            pointerEvents: 'auto', // Enable pointer events for the modal content
+            overflowY:'auto',
+          },
+        }}
+      >
+        <StyleModel widgetId={widgetId} setWidgetStyles={setWidgetStyles} state={checkboxState}/>
+        <button onClick={()=>{handleSave(); closeSettingsModal()}} style={{ backgroundColor: 'green', color: 'white', border: 'none', padding: '5px 10px', cursor: 'pointer' }} >
+          Save
+        </button>
+        <button  onClick={()=>{ closeSettingsModal()}} style={{alignItems:'right', backgroundColor: 'red', color: 'white', border: 'none', padding: '5px 10px', cursor: 'pointer' }}>Cancel</button>
+      
+       {/* {modalIsOpen &&( */}
+        {/* <>
+        <div style={{ marginBottom: '10px' }}>
+          <label>Height:</label>
+          <input
+            type="text"
+            value={widgetStyles.height}
+            onChange={(e) =>
+              dispatch(setWidgetStyles({ widgetId,
+                widgetStyles: {
+                  ...widgetStyles,
+                  height: e.target.value,
+                },
+              })
+            )
+            }
+            style={{ marginLeft: '10px', padding: '5px' }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '10px' }}>
+          <label>Width:</label>
+          <input
+            type="text"
+            value={widgetStyles.width}
+            onChange={(e) =>
+              dispatch(setWidgetStyles({ widgetId,
+                widgetStyles: {
+                  ...widgetStyles,
+                  width: e.target.value,
+                },
+              })
+            )
+            }
+            style={{ marginLeft: '10px', padding: '5px' }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '10px' }}>
+          <label>Background color:</label>
+          <input
+            type="color"
+            value={widgetStyles.backgroundColor}
+            onChange={(e) =>
+              dispatch(setWidgetStyles({ widgetId,
+                widgetStyles: {
+                  ...widgetStyles,
+                  backgroundColor: e.target.value,
+                },
+              })
+            )
+            }
+            style={{ marginLeft: '10px', padding: '5px' }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '10px' }}>
+          <label>Color:</label>
+          <input
+            type="color"
+            value={widgetStyles.color}
+            onChange={(e) =>
+              dispatch(setWidgetStyles({ widgetId,
+                widgetStyles: {
+                  ...widgetStyles,
+                  color: e.target.value,
+                },
+              })
+            )
+            }
+            style={{ marginLeft: '10px', padding: '5px' }}
+          />
+          
+      
+        </div>
+        <div style={{ marginBottom: '10px' }}>
+          <label>Font Size</label>
+          <input
+            type="text"
+            value={widgetStyles.fontSize}
+            onChange={(e) =>
+              dispatch(setWidgetStyles({ widgetId,
+                widgetStyles: {
+                  ...widgetStyles,
+                  fontSize: e.target.value,
+                },
+              })
+            )
+            }
+            style={{
+              width: '100%',
+              padding: '8px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+          }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '10px' }}>
+          <label>Padding:</label>
+          <input
+            type="text"
+            value={widgetStyles.padding}
+            onChange={(e) =>
+              dispatch(setWidgetStyles({ widgetId,
+                widgetStyles: {
+                  ...widgetStyles,
+                  padding: e.target.value,
+                },
+              })
+            )
+            }
+            style={{
+              width: '100%',
+              padding: '8px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+          }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '10px' }}>
+          <label>Margin:</label>
+          <input
+            type="text"
+            value={widgetStyles.margin}
+            onChange={(e) =>
+              dispatch(setWidgetStyles({ widgetId,
+                widgetStyles: {
+                  ...widgetStyles,
+                  margin: e.target.value,
+                },
+              })
+            )
+            }
+            style={{
+              width: '100%',
+              padding: '8px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+          }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '10px' }}>
+          <label>Border:</label>
+          <input
+            type="text"
+            value={widgetStyles.border}
+            onChange={(e) =>
+              dispatch(setWidgetStyles({ widgetId,
+                widgetStyles: {
+                  ...widgetStyles,
+                  border: e.target.value,
+                },
+              })
+            )
+            }
+            style={{
+              width: '100%',
+              padding: '8px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+          }}
+          />
+        </div>
+        <div style={{ marginBottom: '10px' }}>
+          <label>Border Radius:</label>
+          <input
+            type="text"
+            value={widgetStyles.borderRadius}
+            onChange={(e) =>
+              dispatch(setWidgetStyles({ widgetId,
+                widgetStyles: {
+                  ...widgetStyles,
+                  borderRadius: e.target.value,
+                },
+              })
+            )
+            }
+            style={{
+              width: '100%',
+              padding: '8px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+          }}
+          />
+        </div>
+      
+        <button onClick={()=>{handleSave(); closeSettingsModal()}} style={{ backgroundColor: 'green', color: 'white', border: 'none', padding: '5px 10px', cursor: 'pointer' }} >
+          Save
+        </button>
+        <button  onClick={()=>{ closeSettingsModal()}} style={{alignItems:'right', backgroundColor: 'red', color: 'white', border: 'none', padding: '5px 10px', cursor: 'pointer' }}>Cancel</button>
+        </> */}
+        {/* )}  */}
+        </Modal>
             </div>
         </div>
     );

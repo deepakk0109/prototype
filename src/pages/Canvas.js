@@ -26,6 +26,8 @@ import MyStatefulEditor from '../widgets/Text-editor';
 import TextEditor from '../widgets/Text-editor';
 import Datagrid from '../widgets/DataGrid';
 import ImagePickerCarousel from '../widgets/Carousel';
+import { FormBuilder } from '../widgets/FormBuilder';
+import { TextBox } from '../widgets/rte';
 
 
 const ReactGridLayout = WidthProvider(GridLayout);
@@ -388,6 +390,13 @@ const addwidgetToLayout = (widget) => {
       // checkboxSize:'',
       // checkboxLabelFontSize:'',
     imageDataUrl:'',
+   Styles: {
+      // backgroundColor: '#007bff',
+      // color: '#fff',
+      // padding: '10px 15px',
+      // border: 'none',
+      // borderRadius: '5px',
+    },
   };
   if (widget.type === 'checkbox') {
     newWidget.w=1;
@@ -421,13 +430,16 @@ const addwidgetToLayout = (widget) => {
     newWidget.h=1;
     newWidget.w=2;
     newWidget.fileBackendUrl = ''; // URL to be set for file uploads
-    newWidget.fileButtonStyle = {
-      backgroundColor: '#007bff',
-      color: '#fff',
-      padding: '10px 15px',
-      border: 'none',
-      borderRadius: '5px',
-    };
+  }
+  if(widget.type==='datepicker'){
+    newWidget.h=1;
+    newWidget.w=3;
+    newWidget.selectedDate='';
+  }
+  if(widget.type==='texteditor'){
+    newWidget.w=3;
+    newWidget.h=2;
+    newWidget.textEditorContent='';
   }
 
   console.log("new Widget",newWidget);
@@ -584,7 +596,7 @@ const updateTableWidget = (tableDataUrl,widgetId) => {debugger
   );
 };
 
-const updateCheckboxWidget= (checkboxLabel,checkboxFlag,checkboxSize,labelFontSize,widgetId) => {
+const updateCheckboxWidget= (checkboxLabel,checkboxFlag,checkboxSize,labelFontSize,widgetId,widgetStyles) => {
   setLayoutConfig(prevConfig => {
     const updatedElements = prevConfig.main.elements.map(widget => {
       if (widget.i === widgetId) {
@@ -594,6 +606,7 @@ const updateCheckboxWidget= (checkboxLabel,checkboxFlag,checkboxSize,labelFontSi
           checkboxFlag: checkboxFlag,
           checkboxSize:checkboxSize,
           checkboxLabelFontSize:labelFontSize,
+          Styles:widgetStyles
         };
       }
       return widget;
@@ -617,6 +630,7 @@ const updateCheckboxWidget= (checkboxLabel,checkboxFlag,checkboxSize,labelFontSi
         checkboxFlag: checkboxFlag,
         checkboxSize:checkboxSize,
         checkboxLabelFontSize:labelFontSize,
+        Styles:widgetStyles
         } 
       : widget
     )
@@ -656,7 +670,7 @@ const updateImageWidget= (newDataUri,widgetId) => {debugger
   );
 };
 
-const updateDropdownWidget=(label,dropdownOptions, dropdownSource,dropdownUrl,dropdownFontSize,widgetId) => {debugger
+const updateDropdownWidget=(label,dropdownOptions, dropdownSource,dropdownUrl,dropdownFontSize,widgetId,widgetStyles) => {debugger
   setLayoutConfig(prevConfig => {
     const updatedElements = prevConfig.main.elements.map(widget => {
       if (widget.i === widgetId) {
@@ -667,6 +681,7 @@ const updateDropdownWidget=(label,dropdownOptions, dropdownSource,dropdownUrl,dr
           dropdownSource:dropdownSource,
           dropdownUrl:dropdownUrl,
           dropdownFontSize:dropdownFontSize,
+          Styles:widgetStyles,
         };
       }
       return widget;
@@ -691,6 +706,7 @@ const updateDropdownWidget=(label,dropdownOptions, dropdownSource,dropdownUrl,dr
         dropdownSource:dropdownSource,
         dropdownUrl:dropdownUrl,
         dropdownFontSize:dropdownFontSize,
+        Styles:widgetStyles,
         } 
       : widget
     )
@@ -740,14 +756,14 @@ const updateRadioButtonWidget=(radioLabel, radioOptions, selectedRadioOption,rad
   );
 }
 
-const updateFileWidget = (fileBackendUrl, uploadButtonStyle, widgetId) => {
+const updateFileWidget = (fileBackendUrl, uploadButtonStyle, widgetId) => {debugger
   setLayoutConfig(prevConfig => {
     const updatedElements = prevConfig.main.elements.map(widget => {
       if (widget.i === widgetId) {
         return {
           ...widget,
           fileBackendUrl: fileBackendUrl,
-          fileButtonStyle: uploadButtonStyle,
+          styles: uploadButtonStyle,
         };
       }
       return widget;
@@ -768,12 +784,78 @@ const updateFileWidget = (fileBackendUrl, uploadButtonStyle, widgetId) => {
       ? { 
         ...widget,
         fileBackendUrl: fileBackendUrl,
-        fileButtonStyle: uploadButtonStyle,
+        styles: uploadButtonStyle,
       } 
       : widget
     )
   );
 }
+const updateDateWidget=(widgetId,selectedDate) => {
+  setLayoutConfig(prevConfig => {
+    const updatedElements = prevConfig.main.elements.map(widget => {
+      if (widget.i === widgetId) {
+        return {
+          ...widget,
+          selectedDate: selectedDate,
+        };
+      }
+      return widget;
+    });
+
+    return {
+      ...prevConfig,
+      main: {
+        ...prevConfig.main,
+        elements: updatedElements,
+      },
+    };
+  });
+
+  setWidgets(prevWidgets => 
+    prevWidgets.map(widget => 
+      widget.i === widgetId 
+      ? { 
+        ...widget,
+        selectedDate: selectedDate,
+      } 
+      : widget
+    )
+  );
+}
+
+const updateTextEditorWidget=(widgetId,htmlContent) => {
+  setLayoutConfig(prevConfig => {
+    const updatedElements = prevConfig.main.elements.map(widget => {
+      if (widget.i === widgetId) {
+        return {
+          ...widget,
+          textEditorContent: htmlContent,
+        };
+      }
+      return widget;
+    });
+
+    return {
+      ...prevConfig,
+      main: {
+        ...prevConfig.main,
+        elements: updatedElements,
+      },
+    };
+  });
+
+  setWidgets(prevWidgets => 
+    prevWidgets.map(widget => 
+      widget.i === widgetId 
+      ? { 
+        ...widget,
+        textEditorContent: htmlContent,
+      } 
+      : widget
+    )
+  );
+}
+
 
 
 const handleKeyDown = (event) => {
@@ -830,7 +912,7 @@ const RenderComponent = ( component ) => {
 
       case 'textBoxWidget':
         return(
-          <Input setIsPopupOpen={setIsPopupOpen} style={{ width: '100%', height: '100%' }} rows={4} cols={20} value={component.content} onChange={(event) => onContentChange(component.i, event.target.value)}/>
+          <Input setIsPopupOpen={setIsPopupOpen} style={{ width: '100%', height: '100%' }} rows={4} cols={20} value={component.content} onChange={(event) => onContentChange(component.i, event.target.value)} widgetId={component.i}/>
         )
 
       case 'box':
@@ -846,22 +928,23 @@ const RenderComponent = ( component ) => {
 
         case 'checkbox':
           return(
-            <Checkbox updateCheckboxWidget={updateCheckboxWidget} widgetId={component.i}  flag={component.checkboxFlag} label={component.checkboxLabel} size={component.checkboxSize} labelfontsize={component.checkboxLabelFontSize}/>
+            <Checkbox updateCheckboxWidget={updateCheckboxWidget} widgetId={component.i}  flag={component.checkboxFlag} label={component.checkboxLabel} size={component.checkboxSize} labelfontsize={component.checkboxLabelFontSize} Styles={component.Styles}/>
           )
 
       case 'form':
         return(
-          <Form updateFormWidget={updateFormWidget} widgetId={component.i} formInputs={component.formInputs} formBackendLink={component.formBackendLink} isPreview={isPreview}/>
+          // <Form updateFormWidget={updateFormWidget} widgetId={component.i} formInputs={component.formInputs} formBackendLink={component.formBackendLink} isPreview={isPreview}/>
+          <FormBuilder/>
         )
 
       case 'dropdown':
         return(
-          <Dropdown isConfig={isConfig} updateDropdownWidget={updateDropdownWidget} widgetId={component.i} Source={component.dropdownSource} Url={component.dropdownUrl} Options={component.dropdownOptions} FontSize={component.dropdownFontSize} Label={component.dropdownLabel}/>
+          <Dropdown isConfig={isConfig} updateDropdownWidget={updateDropdownWidget} widgetId={component.i} Source={component.dropdownSource} Url={component.dropdownUrl} Options={component.dropdownOptions} FontSize={component.dropdownFontSize} Label={component.dropdownLabel} Styles={component.Styles}/>
         )
 
         case 'datepicker':
           return(
-            <Datepicker/>
+            <Datepicker widgetId={component.i} updateDateWidget={updateDateWidget} SelectedDate={component.selectedDate} isPreview={isPreview}/>
           )
       
       case 'timepicker':
@@ -886,7 +969,7 @@ const RenderComponent = ( component ) => {
 
       case 'file':
         return(
-          <File isConfig={isConfig} widgetId={component.i} updateFileWidget={updateFileWidget} ButtonsStyle={component.fileButtonStyle} BackendUrl={component.fileBackendUrl}/>
+          <File isConfig={isConfig} widgetId={component.i} updateFileWidget={updateFileWidget} ButtonsStyle={component.styles} BackendUrl={component.fileBackendUrl}/>
         )
 
       case 'audio':
@@ -901,7 +984,8 @@ const RenderComponent = ( component ) => {
 
       case 'texteditor':
         return(
-          <TextEditor isConfig={isConfig} isPreview={isPreview} />
+          <TextEditor isConfig={isConfig} isPreview={isPreview} widgetId={component.i} updateTextEditorWidget={updateTextEditorWidget} TextEditorContent={component.textEditorContent}/>
+          // <TextBox widgetId={component.i}/>
         )
 
       case 'datagrid':

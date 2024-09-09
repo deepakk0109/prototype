@@ -9,6 +9,7 @@ import Preview from './pages/Preview';
 import Datagrid from './widgets/DataGrid';
 import ParentComponent from './components/ParentComponent';
 import SomeOtherComponent from './components/ParentComponent';
+import { FormBuilder, PreviewForm } from './widgets/FormBuilder';
 
 function App() {
   // const [selectedLayout, setSelectedLayout] = useState(null);
@@ -38,10 +39,14 @@ function App() {
           path="/preview"
           element={<Preview />} // Default to DashboardPage for unknown routes
         />
-              {/* <Route
+              <Route
           path="/a"
-          element={<SomeOtherComponent />} // Default to DashboardPage for unknown routes
-        /> */}
+          element={<FormBuilder />} // Default to DashboardPage for unknown routes
+        />
+                      <Route
+          path="/b"
+          element={<PreviewForm />} // Default to DashboardPage for unknown routes
+        />
     </Routes>
   </Router>
   );

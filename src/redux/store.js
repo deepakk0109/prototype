@@ -6,6 +6,8 @@ import radiobuttonReducer from './slices/radiobuttonSlice'
 import fileReducer from './slices/fileSlice'
 import imagepickerReducer from './slices/imagepickerSlice'
 import chartReducer from './slices/chartSlice'
+import dateReducer from './slices/datepickerSlice'
+import textEditorReducer from './slices/texteditorSlice'
 export const store = configureStore({
   reducer: {
     dropdown: dropdownReducer,
@@ -15,5 +17,7 @@ export const store = configureStore({
     file:fileReducer,
     imagepicker:imagepickerReducer,
     chart: chartReducer,
+    date:dateReducer,
+    textEditor: textEditorReducer,
   },
 });

@@ -41,6 +41,13 @@ const dropdownSlice = createSlice({
         label: label,
       };
     },
+    setWidgetStyles:(state,action)=>{
+      const { widgetId, widgetStyles } = action.payload;
+      state[widgetId] = {
+        ...state[widgetId],
+        widgetStyles: widgetStyles,
+      };
+    },
     resetDropdown: (state, action) => {
       const { widgetId } = action.payload;
       state[widgetId] = {};
@@ -55,6 +62,7 @@ export const {
   setDropdownFontSize,
   setLabel,
   resetDropdown,
+  setWidgetStyles,
 } = dropdownSlice.actions;
 
 export default dropdownSlice.reducer;

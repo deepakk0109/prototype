@@ -1,8 +1,8 @@
-.ReactModal__Overlay {
+/* .ReactModal__Overlay {
     z-index: 1000;
-  }
+  } */
   
-  .ReactModal__Content {
+  /* .ReactModal__Content {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -12,4 +12,4 @@
     max-height: 80vh;
     overflow: auto;
   }
-  
+   */

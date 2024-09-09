@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 
 Modal.setAppElement('#root');
 
-const Input = ({ setIsPopupOpen, value, onChange }) => {
+const Input = ({ setIsPopupOpen, value, onChange,widgetId }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [textBoxContent, setTextBoxContent] = useState(value || '');
   const [apiData, setApiData] = useState('');
@@ -214,18 +214,3 @@ const handleSave = () => {
 };
 
 export default Input;
-
-
-//       <div id="text-box" style={{ display: 'flex', width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center' }}>
-//         <textarea
-//           value={value}
-//           onChange={onChange}
-//           rows="10"
-//           style={{ width: '80%', height: '80%', padding: '10px', fontSize: '16px' }}
-//         />
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Input;

@@ -202,13 +202,13 @@ const components = [
 
 const widgets=[
   { id: 1, name: 'Chart', type: 'box', icon: '📊' },
-  { id: 2, name: 'TextBox-Widget', type: 'textBoxWidget', icon: '📝' },
+  // { id: 2, name: 'TextBox-Widget', type: 'textBoxWidget', icon: '📝' },
   { id: 3, name: 'Form', type: 'form', icon: '📋' },
   { id: 4, name:'Table', type:'table',icon:'🗃️'},
   { id: 5, name:'Checkbox', type:'checkbox',icon:'☑'},
   { id: 6, name: 'Dropdown', type: 'dropdown', icon: '⬇️' },
   { id: 7, name: 'Datepicker', type: 'datepicker', icon: '📅' },
-  { id: 8, name: 'Timepicker', type: 'timepicker', icon: '⏰' },
+  // { id: 8, name: 'Timepicker', type: 'timepicker', icon: '⏰' },
   { id: 9, name: 'Image', type: 'image', icon: '🖼️' },
   { id: 10, name: 'Search Bar', type: 'searchbar', icon: '🔍' },
   { id: 11, name: 'Radio Button', type: 'radiobutton', icon: '⚫'},
