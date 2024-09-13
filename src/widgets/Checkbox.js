@@ -9,7 +9,7 @@ import Modal from 'react-modal';
 import { StyleModel } from './StyleModel';
 
 Modal.setAppElement('#root');
-const Checkbox = ({ updateCheckboxWidget, widgetId, flag: propFlag, label: propLabel, size: propSize, labelfontsize: propLabelFontSize,Styles }) => {
+const Checkbox = ({ onClick,updateCheckboxWidget, widgetId, flag: propFlag, label: propLabel, size: propSize, labelfontsize: propLabelFontSize,Styles }) => {
     const dispatch = useDispatch();
     const State=useSelector((state) => state.checkbox[widgetId]) || {}
 
@@ -70,7 +70,7 @@ const Checkbox = ({ updateCheckboxWidget, widgetId, flag: propFlag, label: propL
     };
 
     return (
-        <div onClick={toggleSettings} style={{...widgetStyles, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', position: 'relative' }}>
+        <div onClick={()=>{onClick();toggleSettings()}} style={{...widgetStyles, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', position: 'relative' }}>
             {isConfig && (
                 <button
                     style={{
@@ -129,7 +129,7 @@ const CheckboxSidebar = ({ widgetId, updateCheckboxWidget }) => {
         }));
     };
 
-    const handleSave = () => {debugger
+    const handleSave = () => {
         updateCheckboxWidget(label, flag, size, labelFontSize, widgetId,widgetStyles);
     };
     const [modalIsOpen, setModalIsOpen] = useState(false);

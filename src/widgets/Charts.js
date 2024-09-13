@@ -21,10 +21,12 @@ import {
   setParametery,
   setXAxisName,
   setYAxisName,
+  setWidgetStyles,
 } from '../redux/slices/chartSlice'
 import { useDispatch, useSelector } from 'react-redux';
+import { StyleModel } from './StyleModel';
 
-const Charts = ({ setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart,Ox,Px,Bx,Dx,Parameterx,Oy,Py,By,Dy,Parametery }) => {
+const Charts = ({ onClick,setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart,Ox,Px,Bx,Dx,Parameterx,Oy,Py,By,Dy,Parametery,Styles }) => {
   const dispatch =useDispatch();
   const chartState=useSelector((state)=>state.chart[widgetId]) || {};
 
@@ -41,7 +43,7 @@ const Charts = ({ setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart,Ox,Px,Bx
     devicey,
     parametery,
     xAxisName,
-    yAxisName}=chartState;
+    yAxisName,widgetStyles}=chartState;
 
     useEffect(() => {
       dispatch(setChartType({ widgetId, chartType: typeOfChart || 'Line' }));
@@ -50,20 +52,20 @@ const Charts = ({ setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart,Ox,Px,Bx
       dispatch(setPlantx({widgetId, plantx: Px || 'Plant1'}));
       dispatch(setBlockx({widgetId, blockx: Bx || 'Block1'}));
       dispatch(setDevicex({widgetId, devicex: Dx || 'Device1'}));
-      dispatch(setParameterx({widgetId, parameterx: Parameterx || 'Active Power'}));
+      dispatch(setParameterx({widgetId, parameterx: Parameterx || 'Time'}));
       dispatch(setOrganizationy({widgetId,organizationy: Oy || 'Organization1'}))
       dispatch(setPlanty({widgetId, planty: Py || 'Plant1'}));
       dispatch(setBlocky({widgetId, blocky: By || 'Block1'}));
       dispatch(setDevicey({widgetId, devicey: Dy || 'Device1'}));
       dispatch(setParametery({widgetId, parametery: Parametery || 'Temperature'}));
-      dispatch(setXAxisName({widgetId, xAxisName:Parameterx|| 'Active Power'}));
+      dispatch(setXAxisName({widgetId, xAxisName:Parameterx|| 'Time'}));
       dispatch(setYAxisName({widgetId, yAxisName: Parametery ||'Temperature'}));
-    }, [Ox,Px,Bx,Dx,Parameterx,Oy,Py,By,Dy,Parametery, typeOfChart, dispatch, widgetId]);
+      dispatch(setWidgetStyles({widgetId, widgetStyles: Styles || {}}));
+    }, [Ox,Px,Bx,Dx,Parameterx,Oy,Py,By,Dy,Parametery, typeOfChart, dispatch, widgetId,Styles]);
   
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [chartData, setChartData] = useState(null);
-  console.log("chart type",typeOfChart);
   // const [chartType, setChartType] = useState(typeOfChart || 'Line');
   const chartRef = useRef(null);
   const chartInstanceRef = useRef(null);
@@ -88,14 +90,12 @@ const Charts = ({ setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart,Ox,Px,Bx
   // const [yAxisName, setYAxisName] = useState('Temperature');
 
   const fetchData = async () => {
-    console.log("Button clicked")
     try {
       const response = await axios.get('http://localhost:5000/chart-cms'); // Fetch the full data from the server
       console.log("Response data:", response);
       const data = response.data;
       console.log("Response data:", data[1]);
       // For X-Axis
-      debugger
       const xorganization = data[2].organizations.find(org => org.name === organizationx);
       if (!xorganization) throw new Error("Organization not found");
   
@@ -141,7 +141,7 @@ const Charts = ({ setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart,Ox,Px,Bx
         y: yvalues[index]?.value || 0  // Y-Axis value, default to 0 if yvalues has fewer items
       }));
   
-      console.log("Formatted Data:", formattedData);
+      console.log("Formatted Data for chart:", formattedData);
   
       // Update the chart data
      setChartData({
@@ -310,7 +310,7 @@ const Charts = ({ setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart,Ox,Px,Bx
     planty,
     blocky,
     devicey,
-    parametery) => {
+    parametery,widgetStyles) => {
     // Assuming updateWidgetChartType is defined and passed down or available globally
     updateWidgetChart(widgetId, chartType,organizationx,
       plantx,
@@ -321,7 +321,7 @@ const Charts = ({ setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart,Ox,Px,Bx
       planty,
       blocky,
       devicey,
-      parametery);
+      parametery,widgetStyles);
 
   };
 
@@ -348,7 +348,7 @@ const Charts = ({ setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart,Ox,Px,Bx
   };
 
   return (
-    <div onClick={toggleSettings} style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div onClick={()=>{onClick();toggleSettings()}} style={{ position: 'relative', width: '100%', height: '100%',...widgetStyles }}>
       {isConfig && (
         <button
           style={{
@@ -371,7 +371,7 @@ const Charts = ({ setIsPopupOpen,widgetId,updateWidgetChart,typeOfChart,Ox,Px,Bx
       <div
         id="chart"
         ref={chartRef}
-        style={{ width: '100%', height: '100%' }}
+        style={{ width: '100%', height: '100%'}}
       ></div>
     </div>
   );
@@ -394,9 +394,9 @@ const ChartListSidebar=({updateWidgetChart,widgetId,closeModal,updateChart,fetch
     devicey,
     parametery,
     xAxisName,
-    yAxisName}=chartState;
+    yAxisName,widgetStyles}=chartState;
 
-    const  saveChart=()=>{debugger
+    const  saveChart=()=>{
       // if (typeof fetchData === 'function') {
         fetchData(); // Call fetchData function
       // } else {
@@ -409,27 +409,18 @@ const ChartListSidebar=({updateWidgetChart,widgetId,closeModal,updateChart,fetch
     const handleChartTypeChange = (chartType) => {
       dispatch(setChartType({ widgetId, chartType }));
     };
+
+    const [modalIsOpen, setModalIsOpen] = useState(false);
+  
+    const openSettingsModal = () => {
+      setModalIsOpen(true);
+    };
+  
+    const closeSettingsModal = () => {
+      setModalIsOpen(false);
+    };
   return(
     <div style={{height:'100vh', overflowY:'auto', padding:'10px'}}>
-      {/* <div> */}
-        {/* <div>
-        <h2>Charts</h2>
-        <button style={{ margin: '10px' }} onClick={() =>{ dispatch(setChartType({ widgetId, chartType:'Line'}))}}>
-          Line
-        </button>
-        <br />
-        <button style={{ margin: '10px' }} onClick={() => {dispatch(setChartType({ widgetId, chartType:'Bar'})) }}>
-          Bar
-        </button>
-        <br />
-        <button style={{ margin: '10px' }} onClick={() =>{ dispatch(setChartType({ widgetId, chartType:'Scatter'}))}}>
-          Scatter
-        </button>
-        <br />
-        <button style={{ margin: '10px' }} onClick={() =>{dispatch(setChartType({ widgetId, chartType:'Pie'}))}}>
-          Pie
-        </button>
-        </div> */}
           <h2>Charts</h2>
         {chartTypes.map((type) => (
         <li
@@ -583,12 +574,53 @@ const ChartListSidebar=({updateWidgetChart,widgetId,closeModal,updateChart,fetch
           planty,
           blocky,
           devicey,
-          parametery);saveChart()}}
+          parametery,widgetStyles);saveChart()}}
       >
         Save widget
       </button>
     </div>
-    {/* </div> */}
+    
+    <div style={{ marginBottom: '10px' }}>Add styles  <button onClick={openSettingsModal}  style={{ backgroundColor: 'green', color: 'white', border: 'none', padding: '1px 10px', cursor: 'pointer' }}>+</button></div>
+
+        <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={closeSettingsModal}
+        contentLabel="Settings Modal"
+        style={{
+          overlay: {
+            backgroundColor: 'rgba(0, 0, 0, 0)', // Transparent background
+          },
+          content: {
+            top: '50%',
+            right: '10px', // Distance from the right edge
+            left: 'auto', // Remove left alignment
+            bottom: 'auto',
+            marginRight: '0', // No margin on the right
+            transform: 'translateY(-50%)', // Center vertically
+            width: '200px',
+            pointerEvents: 'auto', // Enable pointer events for the modal content
+            overflowY:'auto',
+          },
+        }}
+      >
+        <StyleModel widgetId={widgetId} setWidgetStyles={setWidgetStyles} state={chartState}/>
+        <button onClick={()=>{
+           updateChart(widgetId,chartType,
+          organizationx,
+          plantx,
+          blockx,
+          devicex,
+          parameterx,
+          organizationy,
+          planty,
+          blocky,
+          devicey,
+          parametery,widgetStyles);saveChart(); closeSettingsModal()}} style={{ backgroundColor: 'green', color: 'white', border: 'none', padding: '5px 10px', cursor: 'pointer' }} >
+          Save
+        </button>
+        <button  onClick={()=>{ closeSettingsModal()}} style={{alignItems:'right', backgroundColor: 'red', color: 'white', border: 'none', padding: '5px 10px', cursor: 'pointer' }}>Cancel</button>
+        </Modal>
+
 </div>
     
   )

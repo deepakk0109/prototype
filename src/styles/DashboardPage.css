@@ -7,7 +7,7 @@ body {
 .dashboard-container {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: 90vh;
 }
 
 .header {
@@ -21,7 +21,7 @@ body {
 .header-item {
     display: flex;
     align-items: left;
-    gap: 10px;
+    gap: 7px;
     flex-grow: 1;
 }
 
@@ -83,7 +83,7 @@ body {
 
 .main-content {
     display: flex;
-    flex: 1;
+    /* flex: 1; */
 }
 
 .sidebar {

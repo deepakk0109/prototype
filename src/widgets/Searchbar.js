@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const Searchbar = () => {
+const Searchbar = ({onClick}) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [results, setResults] = useState([]);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
@@ -82,7 +82,7 @@ const Searchbar = () => {
   };
 
   return (
-    <div style={{ position: "relative", width: "100%", height: "auto" }}>
+    <div onClick ={()=>{onClick()}} style={{ position: "relative", width: "100%", height: "100%" }}>
       <input
         type="text"
         placeholder="Search"

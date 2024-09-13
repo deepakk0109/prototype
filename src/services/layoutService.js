@@ -1,8 +1,7 @@
 // src/services/layoutService.js
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/layout';
-
+const API_URL ='http://localhost:5000/layout';
 const layoutService = {
   // Create a new layout (POST)
   createLayout: async (layoutData) => {
@@ -14,7 +13,16 @@ const layoutService = {
       throw error;
     }
   },
-
+//Fet one layout
+getLayoutbyId: async (layoutId) => {
+  try {
+    const response = await axios.get(`${API_URL}/${layoutId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating layout:', error);
+    throw error;
+  }
+},
   // Get all layouts (GET)
   getLayouts: async () => {
     try {

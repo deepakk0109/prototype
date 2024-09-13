@@ -28,16 +28,18 @@ import Datagrid from '../widgets/DataGrid';
 import ImagePickerCarousel from '../widgets/Carousel';
 import { FormBuilder } from '../widgets/FormBuilder';
 import { TextBox } from '../widgets/rte';
+import FormBuilderComponent from '../widgets/fb';
+import { Logo } from '../widgets/Logo';
 
 
 const ReactGridLayout = WidthProvider(GridLayout);
 const defaultLayoutConfig={
-  header: { i: 'header', x: 0, y: 0, w: 12, h: 1, static: false, elements: [] },
-  horizontalNavbar: { i: 'horizontalNavbar', x: 0, y: 1, w: 12, h: 1, static: false, elements: [] },
-  verticalLeftNavbar: { i: 'verticalLeftNavbar', x: 0, y: 1, w: 1, h: 12, static: false, elements: [] },
-  verticalRightNavbar: { i: 'verticalRightNavbar', x: 11, y: 1, w: 1, h: 12, static: false, elements: [] },
-  main: { i: 'main', x: 0, y: 1, w: 12, h: 12, static: false, elements: [] },
-  footer: { i: 'footer', x: 0, y: 12, w: 12, h: 1, static: false, elements: [] }
+//   header: { i: 'header', x: 0, y: 0, w: 12, h: 1, static: false, elements: [] },
+//   horizontalNavbar: { i: 'horizontalNavbar', x: 0, y: 1, w: 12, h: 1, static: false, elements: [] },
+//   verticalLeftNavbar: { i: 'verticalLeftNavbar', x: 0, y: 1, w: 1, h: 12, static: false, elements: [] },
+//   verticalRightNavbar: { i: 'verticalRightNavbar', x: 11, y: 1, w: 1, h: 12, static: false, elements: [] },
+  main: { i: 'main', x: 0, y: 0, w: 12, h: 20, static: false, elements: [] },
+//   footer: { i: 'footer', x: 0, y: 12, w: 12, h: 1, static: false, elements: [] }
 };
 const mergeLayouts = (defaultConfig, fetchedLayouts) => {
   const updatedConfig = { ...defaultConfig };
@@ -58,19 +60,62 @@ const mergeLayouts = (defaultConfig, fetchedLayouts) => {
 function Canvas({ selectedLayout, selectedComponent,selectedWidget,savedlayout,isPreview}) {
   const location = useLocation();
   const isConfig = location.pathname === '/configurations';
-
+  console.log("Slayout",selectedLayout);
   const [components, setComponents] = useState([]);
   const[widgets,setWidgets]=useState([]);
   const [hoveredSection, setHoveredSection] = useState(null);
-  const [layoutConfig, setLayoutConfig] = useState(defaultLayoutConfig);
+
+
+  
+  const savedMainElements = savedlayout && savedlayout[0]?.elements ? savedlayout[0].elements : [];
+
+  // Initialize state based on the presence of savedlayout
+  const [layoutConfig, setLayoutConfig] = useState(savedlayout ? {
+    ...defaultLayoutConfig,
+    main: {
+      ...defaultLayoutConfig.main,
+      elements: savedMainElements.length > 0 ? savedMainElements : defaultLayoutConfig.main.elements,
+    }
+  } : defaultLayoutConfig);
+  
+  console.log("Initial LayoutConfig", layoutConfig);
+  
+  // Use useEffect to handle updates when savedlayout changes
+  useEffect(() => {
+    if (savedlayout) {
+      const savedMainElements = savedlayout[0]?.elements ? savedlayout[0].elements : [];
+      
+      const updatedLayoutConfig = {
+        ...defaultLayoutConfig,
+        main: {
+          ...defaultLayoutConfig.main,
+          elements: savedMainElements.length > 0 ? savedMainElements : defaultLayoutConfig.main.elements,
+        },
+      };
+      
+      console.log("Updated LayoutConfig inside useEffect", updatedLayoutConfig);
+      setLayoutConfig(updatedLayoutConfig);
+    }
+  }, [savedlayout]);
+  
+  console.log("Final LayoutConfig after useEffect", layoutConfig);
+
+  // const [layoutConfig, setLayoutConfig] = useState(defaultLayoutConfig);
   const [selectedComponentId, setSelectedComponentId] = useState(null); // State for selected component
+  const[layoutMain,setLayoutMain]=useState(null);
   // const [layout,setLayout]=useState(null);
 
   const isOuterGridDraggableRef = useRef(true);
   const isInnerGridDraggableRef = useRef(true);
   const contentRefs = useRef({});
-
-
+  
+   // setLayoutConfig({main:savedlayout})
+  //  useEffect(() => {
+  //   if (savedlayout) {
+  //     setLayoutConfig({savedlayout});
+  //   }
+  // }, [savedlayout]);
+  
 
   const setIsPopupOpen = (isOpen) => {
     isOuterGridDraggableRef.current = !isOpen;
@@ -147,46 +192,46 @@ function Canvas({ selectedLayout, selectedComponent,selectedWidget,savedlayout,i
     let leftnavh=12;
     let rightnavh=12;
     let mainx=0;
-    if (selectedLayout) {
-      if (selectedLayout.header) {
-        layout.push(layoutConfig.header);
-      }
-      if (selectedLayout.footer) {
-        layout.push(layoutConfig.footer);
-        maincontentHeight -= 1;
-        // layoutConfig.verticalLeftNavbar.h -= 1;
-        // layoutConfig.verticalRightNavbar.h -= 1;
-        leftnavh -=1;
-        rightnavh-=1;
-      }
-      if (selectedLayout.ishorizontalnav === 'true') {
-        maincontentHeight -= 1;
-        // layoutConfig.verticalLeftNavbar.h -= 1;
-        // layoutConfig.verticalRightNavbar.h -= 1;
-        leftnavh -=1;
-        rightnavh-=1;
-        layout.push(layoutConfig.horizontalNavbar);
-      }
-      if (selectedLayout.isverticalleftnav === 'true') {
-        mainx+=1;
-        // layoutConfig.main.x = 1;
-        layoutConfig.main.w -= 1;
-        mainwidth-=1;
-        layoutConfig.verticalLeftNavbar.h=leftnavh;
-        layout.push(layoutConfig.verticalLeftNavbar);
-      }
-      if (selectedLayout.isverticalrightnav === 'true') {
-        layoutConfig.main.w -= 1;
-        mainwidth-=1;
-        layoutConfig.verticalRightNavbar.h=rightnavh;
-        layout.push(layoutConfig.verticalRightNavbar);
+    // if (selectedLayout) {
+    //   if (selectedLayout.header) {
+    //     layout.push(layoutConfig.header);
+    //   }
+    //   if (selectedLayout.footer) {
+    //     layout.push(layoutConfig.footer);
+    //     maincontentHeight -= 1;
+    //     // layoutConfig.verticalLeftNavbar.h -= 1;
+    //     // layoutConfig.verticalRightNavbar.h -= 1;
+    //     leftnavh -=1;
+    //     rightnavh-=1;
+    //   }
+    //   if (selectedLayout.ishorizontalnav === 'true') {
+    //     maincontentHeight -= 1;
+    //     // layoutConfig.verticalLeftNavbar.h -= 1;
+    //     // layoutConfig.verticalRightNavbar.h -= 1;
+    //     leftnavh -=1;
+    //     rightnavh-=1;
+    //     layout.push(layoutConfig.horizontalNavbar);
+    //   }
+    //   if (selectedLayout.isverticalleftnav === 'true') {
+    //     mainx+=1;
+    //     // layoutConfig.main.x = 1;
+    //     layoutConfig.main.w -= 1;
+    //     mainwidth-=1;
+    //     layoutConfig.verticalLeftNavbar.h=leftnavh;
+    //     layout.push(layoutConfig.verticalLeftNavbar);
+    //   }
+    //   if (selectedLayout.isverticalrightnav === 'true') {
+    //     layoutConfig.main.w -= 1;
+    //     mainwidth-=1;
+    //     layoutConfig.verticalRightNavbar.h=rightnavh;
+    //     layout.push(layoutConfig.verticalRightNavbar);
 
-      }
-      layoutConfig.main.h = maincontentHeight;
-      layoutConfig.main.w=mainwidth;
-      layoutConfig.main.x=mainx;
-      layout.push(layoutConfig.main);
-    }
+    //   }
+    //   layoutConfig.main.h = maincontentHeight;
+    //   layoutConfig.main.w=mainwidth;
+    //   layoutConfig.main.x=mainx;
+    // }
+    layout.push(layoutConfig.main);
 
     return layout;
   };
@@ -432,8 +477,8 @@ const addwidgetToLayout = (widget) => {
     newWidget.fileBackendUrl = ''; // URL to be set for file uploads
   }
   if(widget.type==='datepicker'){
-    newWidget.h=1;
-    newWidget.w=3;
+    newWidget.h=5;
+    newWidget.w=4;
     newWidget.selectedDate='';
   }
   if(widget.type==='texteditor'){
@@ -530,6 +575,7 @@ const updateWidgetChart = (
     )
   );
 };
+
 const updateFormWidget = (inputs, backendLink,widgetId) => {
   setLayoutConfig(prevConfig => {
     const updatedElements = prevConfig.main.elements.map(widget => {
@@ -639,13 +685,13 @@ const updateCheckboxWidget= (checkboxLabel,checkboxFlag,checkboxSize,labelFontSi
   );
 };
 
-const updateImageWidget= (newDataUri,widgetId) => {debugger
+const updateImageWidget= (imageSrc,widgetId) => {
   setLayoutConfig(prevConfig => {
     const updatedElements = prevConfig.main.elements.map(widget => {
       if (widget.i === widgetId) {
         return { 
           ...widget,
-          imageDataUrl:newDataUri
+          imageDataUrl:imageSrc
         };
       }
       return widget;
@@ -665,14 +711,14 @@ const updateImageWidget= (newDataUri,widgetId) => {debugger
       widget.i === widgetId 
       ? { 
         ...widget,
-        imageDataUrl:newDataUri
+        imageDataUrl:imageSrc
         } 
       : widget
     )
   );
 };
 
-const updateDropdownWidget=(label,dropdownOptions, dropdownSource,dropdownUrl,dropdownFontSize,widgetId,widgetStyles) => {debugger
+const updateDropdownWidget=(label,dropdownOptions, dropdownSource,dropdownUrl,dropdownFontSize,widgetId,widgetStyles) => {
   setLayoutConfig(prevConfig => {
     const updatedElements = prevConfig.main.elements.map(widget => {
       if (widget.i === widgetId) {
@@ -760,7 +806,7 @@ const updateRadioButtonWidget=(radioLabel, radioOptions, selectedRadioOption,rad
   );
 }
 
-const updateFileWidget = (fileBackendUrl, uploadButtonStyle, widgetId) => {debugger
+const updateFileWidget = (fileBackendUrl, uploadButtonStyle, widgetId) => {
   setLayoutConfig(prevConfig => {
     const updatedElements = prevConfig.main.elements.map(widget => {
       if (widget.i === widgetId) {
@@ -863,17 +909,21 @@ const updateTextEditorWidget=(widgetId,htmlContent) => {
 
 
 const handleKeyDown = (event) => {
-  if (event.key === 'Delete' && selectedComponentId) {debugger
+  if (event.key === 'Delete' && selectedComponentId) {
+    console.log('Delete key pressed, component id:', selectedComponentId);
+    
     setLayoutConfig(prevConfig => {
       const updatedElements = prevConfig.main.elements.filter(item => item.i !== selectedComponentId);
+
       return {
         ...prevConfig,
         main: {
           ...prevConfig.main,
-          elements: updatedElements
-        }
+          elements: updatedElements,
+        },
       };
     });
+
     setSelectedComponentId(null); // Clear selection
   }
 };
@@ -891,7 +941,7 @@ const handleSaveLayout = async () => {
   try {
     // Save the layout to the server (POST)
     console.log("saving",layout);
-    const response = await layoutService.createLayout({ layoutItems: layout });
+    const response = await layoutService.createLayout({ layoutItems: layout[0] });
     console.log('Layout saved successfully:', response);
   } catch (error) {
     console.error('Failed to save layout:', error);
@@ -901,110 +951,114 @@ const handleSaveLayout = async () => {
 const RenderComponent = ( component ) => {
     
   switch (component.type) {
+    case 'logo':
+      return(
+        <Logo onClick={()=>{setSelectedComponentId(component.i)}} isConfig={isConfig} updateImageWidget={updateImageWidget} widgetId={component.i} DataUrl={component.imageDataUrl}/>
+      )
     case 'button':
       return (
-        <button style={{ width: '100%', height: '100%', backgroundColor: 'lightblue', borderRadius: '5px' }}  onClick={()=>{console.log(layout)}}>
-          {component.content || 'Submit'}
+        <button style={{ width: '100%', height: '100%', backgroundColor: 'lightblue', borderRadius: '5px' }}  onClick={()=>{setSelectedComponentId(component.i)}}>
+          {component.content || 'Button'}
         </button>
       );
 
     case 'textarea':
       return (
-        <textarea style={{ width: '100%', height: '100%' }} rows={4} cols={20} value={component.content} onChange={(event) => onContentChange(component.i, event.target.value)}/>
+        <textarea  onClick={()=>{setSelectedComponentId(component.i)}} style={{ width: '100%', height: '100%' }} rows={4} cols={20} value={component.content} onChange={(event) => onContentChange(component.i, event.target.value)}/>
         
       );
 
       case 'textBoxWidget':
         return(
-          <Input setIsPopupOpen={setIsPopupOpen} style={{ width: '100%', height: '100%' }} rows={4} cols={20} value={component.content} onChange={(event) => onContentChange(component.i, event.target.value)} widgetId={component.i}/>
+          <Input  onClick={()=>{setSelectedComponentId(component.i)}} setIsPopupOpen={setIsPopupOpen} style={{ width: '100%', height: '100%' }} rows={4} cols={20} value={component.content} onChange={(event) => onContentChange(component.i, event.target.value)} widgetId={component.i}/>
         )
 
       case 'box':
         return (
           <div style={{ flexGrow: 1, display:'flex', position: 'relative', border: '1px solid #ccc', width: '100%', height: '100%' }}>
-            <Charts setIsPopupOpen={setIsPopupOpen} Styles={component.Styles} updateWidgetChart={updateWidgetChart} typeOfChart={component.chartType}  widgetId={component.i} Ox={component.xorganization} Px={component.xplant} Bx={component.xblock} Dx={component.xdevice} Parameterx={component.xparameter} Oy={component.yorganization} Py={component.yplant} By={component.yblock} Dy={component.ydevice} Parametery={component.yparameter} style={{  border: '1px solid #ccc', width: '100%', height: '100%' }} />
+            <Charts onClick={()=>{setSelectedComponentId(component.i)}}  setIsPopupOpen={setIsPopupOpen} Styles={component.Styles} updateWidgetChart={updateWidgetChart} typeOfChart={component.chartType}  widgetId={component.i} Ox={component.xorganization} Px={component.xplant} Bx={component.xblock} Dx={component.xdevice} Parameterx={component.xparameter} Oy={component.yorganization} Py={component.yplant} By={component.yblock} Dy={component.ydevice} Parametery={component.yparameter} style={{  border: '1px solid #ccc', width: '100%', height: '100%' }} />
         </div>
         );
         case 'table':
           return(
-            <Table setIsPopupOpen={setIsPopupOpen} updateTableWidget={updateTableWidget} widgetId={component.i} tableDataUrl={component.tableDataUrl}/>
+            <Table onClick={()=>{setSelectedComponentId(component.i)}}  setIsPopupOpen={setIsPopupOpen} updateTableWidget={updateTableWidget} widgetId={component.i} tableDataUrl={component.tableDataUrl}/>
           )
 
         case 'checkbox':
           return(
-            <Checkbox updateCheckboxWidget={updateCheckboxWidget} widgetId={component.i}  flag={component.checkboxFlag} label={component.checkboxLabel} size={component.checkboxSize} labelfontsize={component.checkboxLabelFontSize} Styles={component.Styles}/>
+            <Checkbox  onClick={()=>{setSelectedComponentId(component.i)}} updateCheckboxWidget={updateCheckboxWidget} widgetId={component.i}  flag={component.checkboxFlag} label={component.checkboxLabel} size={component.checkboxSize} labelfontsize={component.checkboxLabelFontSize} Styles={component.Styles}/>
           )
 
       case 'form':
         return(
-          <Form updateFormWidget={updateFormWidget} widgetId={component.i} formInputs={component.formInputs} formBackendLink={component.formBackendLink} isPreview={isPreview}/>
+          <Form onClick={()=>{setSelectedComponentId(component.i)}}  updateFormWidget={updateFormWidget} widgetId={component.i} formInputs={component.formInputs} formBackendLink={component.formBackendLink} isPreview={isPreview}/>
           // <FormBuilder/>
           // <FormBuilderComponent/>
         )
 
       case 'dropdown':
         return(
-          <Dropdown isConfig={isConfig} updateDropdownWidget={updateDropdownWidget} widgetId={component.i} Source={component.dropdownSource} Url={component.dropdownUrl} Options={component.dropdownOptions} FontSize={component.dropdownFontSize} Label={component.dropdownLabel} Styles={component.Styles}/>
+          <Dropdown onClick={()=>{setSelectedComponentId(component.i)}} isConfig={isConfig} updateDropdownWidget={updateDropdownWidget} widgetId={component.i} Source={component.dropdownSource} Url={component.dropdownUrl} Options={component.dropdownOptions} FontSize={component.dropdownFontSize} Label={component.dropdownLabel} Styles={component.Styles}/>
         )
 
         case 'datepicker':
           return(
-            <Datepicker widgetId={component.i} updateDateWidget={updateDateWidget} SelectedDate={component.selectedDate} isPreview={isPreview}/>
+            <Datepicker onClick={()=>{setSelectedComponentId(component.i)}}  widgetId={component.i} updateDateWidget={updateDateWidget} SelectedDate={component.selectedDate} isPreview={isPreview}/>
           )
       
       case 'timepicker':
         return(
-          <Timepicker/>
+          <Timepicker onClick={()=>{setSelectedComponentId(component.i)}}/>
         )
 
       case 'image':
         return(
-          <ImagePicker isConfig={isConfig} updateImageWidget={updateImageWidget} widgetId={component.i} DataUrl={component.imageDataUrl}/>
+          <ImagePicker onClick={()=>{setSelectedComponentId(component.i)}} isConfig={isConfig} updateImageWidget={updateImageWidget} widgetId={component.i} DataUrl={component.imageDataUrl}/>
         )
 
       case 'searchbar':
         return(
-          <Searchbar/>
+          <Searchbar onClick={()=>{setSelectedComponentId(component.i)}}/>
         )
 
       case 'radiobutton':
         return(
-          <RadioButton updateRadioButtonWidget={updateRadioButtonWidget} label={component.radioLabel} options={component.radioOptions} selectedOption={component.selectedRadioOption} fontSize={component.radioFontSize} dataSource={component.radiodataSource} ApiUrl={component.radioApiUrl} isConfig={isConfig} widgetId={component.i} Styles={component.Styles}/>
+          <RadioButton onClick={()=>{setSelectedComponentId(component.i)}} updateRadioButtonWidget={updateRadioButtonWidget} label={component.radioLabel} options={component.radioOptions} selectedOption={component.selectedRadioOption} fontSize={component.radioFontSize} dataSource={component.radiodataSource} ApiUrl={component.radioApiUrl} isConfig={isConfig} widgetId={component.i} Styles={component.Styles}/>
         )
 
       case 'file':
         return(
-          <File isConfig={isConfig} widgetId={component.i} updateFileWidget={updateFileWidget} ButtonsStyle={component.styles} BackendUrl={component.fileBackendUrl}/>
+          <File onClick={()=>{setSelectedComponentId(component.i)}} isConfig={isConfig} widgetId={component.i} updateFileWidget={updateFileWidget} ButtonsStyle={component.styles} BackendUrl={component.fileBackendUrl}/>
         )
 
       case 'audio':
         return(
-          <Audio/>
+          <Audio onClick={()=>{setSelectedComponentId(component.i)}}/>
         )
 
       case 'line':
         return(
-          <SimpleLine setIsPopupOpen={setIsPopupOpen}/>
+          <SimpleLine onClick={()=>{setSelectedComponentId(component.i)}} setIsPopupOpen={setIsPopupOpen}/>
         )
 
       case 'texteditor':
         return(
-          <TextEditor isConfig={isConfig} isPreview={isPreview} widgetId={component.i} updateTextEditorWidget={updateTextEditorWidget} TextEditorContent={component.textEditorContent}/>
+          <TextEditor onClick={()=>{setSelectedComponentId(component.i)}} isConfig={isConfig} isPreview={isPreview} widgetId={component.i} updateTextEditorWidget={updateTextEditorWidget} TextEditorContent={component.textEditorContent}/>
           // <TextBox widgetId={component.i}/>
         )
 
       case 'datagrid':
         return(
-          <Datagrid/>
+          <Datagrid onClick={()=>{setSelectedComponentId(component.i)}}/>
         )
 
       case 'carousel':
         return(
-          <ImagePickerCarousel isConfig={isConfig} updateImageWidget={updateImageWidget} widgetId={component.id}/>
+          <ImagePickerCarousel  onClick={()=>{setSelectedComponentId(component.i)}} isConfig={isConfig} updateImageWidget={updateImageWidget} widgetId={component.id}/>
         )
 
     default:
-      return <div>Another Component</div>;
+      return <div onClick={()=>{setSelectedComponentId(component.i)}}>Another Component</div>;
   }
 
 };
@@ -1022,6 +1076,7 @@ const handleFetchLayouts = async () => {
         setLayoutConfig(updatedLayoutConfig);
         selectedLayout = updateSelectedLayout(fetchedLayout);
         console.log("slayout",selectedLayout);
+       
         layout=getLayout();
                 console.log('configsup:', layoutConfig);
                    console.log("flayout",fetchedLayout);
@@ -1042,135 +1097,93 @@ const handleFetchLayouts = async () => {
   //   console.log("state",layoutConfig);
   // }
 
-if(isPreview){
-  layout=savedlayout;
-  // selectedLayout=savedlayout;
-  // console.log("selected layout",selectedLayout);
-}
-
-// console.log("config",layoutConfig);
+// if(isPreview){
+//   layout=savedlayout;
+//   // setLayoutConfig({main:savedlayout})
+//   // selectedLayout=savedlayout;
+//   // console.log("selected layout",selectedLayout);
+// }
 console.log("layout",layout);
-
+console.log("layout2",layout[0]);
+console.log("isPreview",isPreview);
+// layout=getLayout();
 // console.log("slayout",selectedLayout);
 
 return (
-  <div>
-    <div style={{ position: 'absolute', top: '10px', right: '10px' }}>
-                { !isPreview && (<button 
-                onClick={() => {{
-                  localStorage.setItem('layout', JSON.stringify(layout));
-                  handleSaveLayout();
-                }}}
+    <div>
+      <div style={{ position: 'absolute', top: '10px', right: '10px' }}>
+        {!isPreview && (
+          <button 
+            onClick={() => {
+              localStorage.setItem('layout', JSON.stringify(layout));
+              handleSaveLayout();
+            }}
+            style={{
+              padding: '5px 10px',
+              backgroundColor: '#007bff',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Save
+          </button>
+        )}
+      </div>
+      <div className={isPreview ? "canvas-container-preview" : "canvas-container"} style={{position: 'relative',border:'1px solid black' , width: '100vw', height: '100vh'}}>
+        {layout && layout.length>0 ? (
+          <ReactGridLayout
+            key={`nested-main`}
+            className="components"
+            layout={layout[0]?.elements}
+            cols={12}
+            rowHeight={50}
+            width={845}
+            autoSize={true}
+            // isDraggable={isPreview ? false : (isConfig ? false : isOuterGridDraggableRef.current)}  // Lock dragging in Preview mode
+            // isResizable={isPreview ? false : (isConfig ? false : isOuterGridDraggableRef.current)}  // Lock resizing in Preview mode
+            isDraggable={false}  // Lock draggable behavior
+            isResizable={false}
+            compactType={null}
+            preventCollision={true}
+            draggableHandle=".non-draggable"  // Prevent all dragging by ensuring no elements match this class
+            draggableCancel=".non-draggable"
+            // onLayoutChange={(newLayout) => onNestedLayoutChange(newLayout, layout[0]?.i)}
+          
+          >
+            {layout[0]?.elements.map((component) => (
+              <div
+                key={component.i}
+                data-grid={component}
+                className={'element'}
+                ref={(el) => contentRefs.current[component.i] = el}
+                onMouseEnter={() => setHoveredSection(component.i)}
+                onMouseLeave={() => setHoveredSection(null)}
                 style={{
-                  padding: '5px 10px',
-                  backgroundColor: '#007bff',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
+                  // border: hoveredSection === component.i ? '2px dashed #007bff' : '2px solid transparent',
+                  position: 'fixed',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'flex-start',
+                  // backgroundColor: '#f0f0f0',
+                  minHeight: '20px',
+                  textAlign: 'center',
+                  writingMode: component.i.includes('vertical') ? 'vertical-lr' : 'horizontal-tb',
+                  textOrientation: component.i.includes('vertical') ? 'upright' : 'mixed',
                 }}
               >
-                Save
-              </button>
-                )}
-        </div>
-    <div className={isPreview?"canvas-container-preview":"canvas-container"}  style={{ position: 'relative'}}>
-       
-      {selectedLayout ||savedlayout ? (
-        <ReactGridLayout
-          className="layout"
-          layout={getLayout()}
-          cols={12}
-          rowHeight={39}
-          width={845}
-          autoSize={true}
-          isDraggable={isConfig || isPreview? false:isOuterGridDraggableRef.current }  // Control whether the outer grid is draggable
-          isResizable={isConfig || isPreview? false:isOuterGridDraggableRef.current}
-          compactType={null}
-          preventCollision={true}
-          onLayoutChange={
-            onOuterLayoutChange}
-        >
-          {layout.map(sectionLayout => (
-            <div
-              key={sectionLayout.i}
-              data-grid={sectionLayout}
-              className={`section ${sectionLayout.i}`}
-              ref={(el) => contentRefs.current[sectionLayout.i] = el}
-              contentEditable
-              suppressContentEditableWarning={true}
-              // onBlur={() => handleBlur(sectionLayout.i)}
-              onMouseEnter={() => setHoveredSection(sectionLayout.i)}
-              onMouseLeave={() => setHoveredSection(null)}
-              style={{
-                border: hoveredSection === sectionLayout.i ? '2px dashed #007bff' : '2px solid transparent',
-                position: 'relative',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'flex-start',
-                backgroundColor: '#f0f0f0',
-                minHeight: '20px',
-                textAlign: 'center',
-                writingMode: sectionLayout.i.includes('vertical') ? 'vertical-lr' : 'horizontal-tb',
-                textOrientation: sectionLayout.i.includes('vertical') ? 'upright' : 'mixed',
-                // padding: '10px'
-                overflow: 'auto',
-              }}
-            >
-              { sectionLayout.elements.length>0 && (
-                <ReactGridLayout
-                  key={`nested-${sectionLayout.i}`}
-                  className="components"
-                  layout={sectionLayout.elements}
-                  cols={12}
-                  rowHeight={39}
-                  width={845}
-                  autoSize={true}
-                  isDraggable={isConfig || isPreview? false:isInnerGridDraggableRef.current}
-                  isResizable={isConfig || isPreview? false:isInnerGridDraggableRef.current}
-                  compactType={null}
-                  preventCollision={true}
-                  onDragStart={onNestedDragStart}
-                  onDragStop={onNestedDragStop}
-                  onLayoutChange={(newLayout) => onNestedLayoutChange(newLayout, sectionLayout.i)}
-                >
-                  {sectionLayout.elements.map(component => (
-                    <div
-                      key={component.i}
-                      data-grid={component}
-                      onMouseEnter={() => setHoveredSection(component.i)}
-                      onMouseLeave={() => setHoveredSection(null)}
-                      style={{
-                        // border: hoveredSection === component.i ? '2px dashed #007bff' : '2px solid transparent',
-                        // border: '1px dashed #28a745',
-                        backgroundColor: '#ffffff',
-                        textAlign: 'center',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        // padding: '1px',
-                        margin:'2px',
-                        minHeight: '50px',
-                      }}
-                    >
-                      {RenderComponent(component)}
-                    </div>
-                  ))}
-                </ReactGridLayout>
-              )}
-            </div>
-          ))}
-        </ReactGridLayout>
-      ) : (
-        <p >Please select a layout</p>
-      )}
-    </div>
+                {RenderComponent(component)}
+              </div>
+            ))}
+          </ReactGridLayout>
+        ) : (
+          <div>Select a layout</div>
+        )}
+      </div>
     </div>
   );
+  
 }
 
 export default Canvas;
-
-
-
-

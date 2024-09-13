@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 
 Modal.setAppElement('#root');
 
-const Input = ({ setIsPopupOpen, value, onChange,widgetId }) => {
+const Input = ({onClick, setIsPopupOpen, value, onChange,widgetId }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [textBoxContent, setTextBoxContent] = useState(value || '');
   const [apiData, setApiData] = useState('');
@@ -33,7 +33,7 @@ const Input = ({ setIsPopupOpen, value, onChange,widgetId }) => {
     fetchApiData();
   }, [apiendpoint]);
 
-  const fetchApiData = async () => {debugger
+  const fetchApiData = async () => {
     try {
       const response = await fetch(apiendpoint); // Replace with your API endpoint
       const data = await response.json();
@@ -58,7 +58,7 @@ const handleSave = () => {
   };
 
   return (
-    <div style={{ display: 'flex', width: '100%', height: '100%', right: '1px' }}>
+    <div onClick={()=>{onClick()}} style={{ display: 'flex', width: '100%', height: '100%', right: '1px' }}>
       {isConfig && (
         <button
           style={{

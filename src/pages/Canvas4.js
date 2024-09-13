@@ -28,16 +28,17 @@ import Datagrid from '../widgets/DataGrid';
 import ImagePickerCarousel from '../widgets/Carousel';
 import { FormBuilder } from '../widgets/FormBuilder';
 import { TextBox } from '../widgets/rte';
+import FormBuilderComponent from '../widgets/fb';
 
 
 const ReactGridLayout = WidthProvider(GridLayout);
 const defaultLayoutConfig={
-  header: { i: 'header', x: 0, y: 0, w: 12, h: 1, static: false, elements: [] },
-  horizontalNavbar: { i: 'horizontalNavbar', x: 0, y: 1, w: 12, h: 1, static: false, elements: [] },
-  verticalLeftNavbar: { i: 'verticalLeftNavbar', x: 0, y: 1, w: 1, h: 12, static: false, elements: [] },
-  verticalRightNavbar: { i: 'verticalRightNavbar', x: 11, y: 1, w: 1, h: 12, static: false, elements: [] },
-  main: { i: 'main', x: 0, y: 1, w: 12, h: 12, static: false, elements: [] },
-  footer: { i: 'footer', x: 0, y: 12, w: 12, h: 1, static: false, elements: [] }
+//   header: { i: 'header', x: 0, y: 0, w: 12, h: 1, static: false, elements: [] },
+//   horizontalNavbar: { i: 'horizontalNavbar', x: 0, y: 1, w: 12, h: 1, static: false, elements: [] },
+//   verticalLeftNavbar: { i: 'verticalLeftNavbar', x: 0, y: 1, w: 1, h: 12, static: false, elements: [] },
+//   verticalRightNavbar: { i: 'verticalRightNavbar', x: 11, y: 1, w: 1, h: 12, static: false, elements: [] },
+  main: { i: 'main', x: 0, y: 0, w: 12, h: 12, static: false, elements: [] },
+//   footer: { i: 'footer', x: 0, y: 12, w: 12, h: 1, static: false, elements: [] }
 };
 const mergeLayouts = (defaultConfig, fetchedLayouts) => {
   const updatedConfig = { ...defaultConfig };
@@ -58,12 +59,13 @@ const mergeLayouts = (defaultConfig, fetchedLayouts) => {
 function Canvas({ selectedLayout, selectedComponent,selectedWidget,savedlayout,isPreview}) {
   const location = useLocation();
   const isConfig = location.pathname === '/configurations';
-
+  console.log("Slayout",selectedLayout);
   const [components, setComponents] = useState([]);
   const[widgets,setWidgets]=useState([]);
   const [hoveredSection, setHoveredSection] = useState(null);
   const [layoutConfig, setLayoutConfig] = useState(defaultLayoutConfig);
   const [selectedComponentId, setSelectedComponentId] = useState(null); // State for selected component
+  const[layoutMain,setLayoutMain]=useState(null);
   // const [layout,setLayout]=useState(null);
 
   const isOuterGridDraggableRef = useRef(true);
@@ -530,6 +532,7 @@ const updateWidgetChart = (
     )
   );
 };
+
 const updateFormWidget = (inputs, backendLink,widgetId) => {
   setLayoutConfig(prevConfig => {
     const updatedElements = prevConfig.main.elements.map(widget => {
@@ -1048,129 +1051,84 @@ if(isPreview){
   // console.log("selected layout",selectedLayout);
 }
 
-// console.log("config",layoutConfig);
 console.log("layout",layout);
+console.log("layout2",layout[0]);
+console.log("isPreview",isPreview);
 
 // console.log("slayout",selectedLayout);
 
 return (
-  <div>
-    <div style={{ position: 'absolute', top: '10px', right: '10px' }}>
-                { !isPreview && (<button 
-                onClick={() => {{
-                  localStorage.setItem('layout', JSON.stringify(layout));
-                  handleSaveLayout();
-                }}}
+    <div>
+      <div style={{ position: 'absolute', top: '10px', right: '10px' }}>
+        {!isPreview && (
+          <button 
+            onClick={() => {
+              localStorage.setItem('layout', JSON.stringify(layout));
+              handleSaveLayout();
+            }}
+            style={{
+              padding: '5px 10px',
+              backgroundColor: '#007bff',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Save
+          </button>
+        )}
+      </div>
+      <div className={isPreview ? "canvas-container-preview" : "canvas-container"} style={{ position: 'relative',border:'1px solid black' }}>
+        {layout && layout.length>0 ? (
+          <ReactGridLayout
+            key={`nested-main`}
+            className="components"
+            layout={layout[0]?.elements}
+            cols={12}
+            rowHeight={39}
+            width={845}
+            autoSize={true}
+            isDraggable={isPreview ? false : (isConfig ? false : isOuterGridDraggableRef.current)}  // Lock dragging in Preview mode
+            isResizable={isPreview ? false : (isConfig ? false : isOuterGridDraggableRef.current)}  // Lock resizing in Preview mode
+            // isDraggable={false}  // Lock draggable behavior
+            // isResizable={false}
+            compactType={null}
+            preventCollision={true}
+            onLayoutChange={(newLayout) => onNestedLayoutChange(newLayout, layout[0]?.i)}
+          >
+            {layout[0]?.elements.map((component) => (
+              <div
+                key={component.i}
+                data-grid={component}
+                className={`section main`}
+                ref={(el) => contentRefs.current[component.i] = el}
+                onMouseEnter={() => setHoveredSection(component.i)}
+                onMouseLeave={() => setHoveredSection(null)}
                 style={{
-                  padding: '5px 10px',
-                  backgroundColor: '#007bff',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
+                  border: hoveredSection === component.i ? '2px dashed #007bff' : '2px solid transparent',
+                  position: 'fixed',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'flex-start',
+                  backgroundColor: '#f0f0f0',
+                  minHeight: '20px',
+                  textAlign: 'center',
+                  writingMode: component.i.includes('vertical') ? 'vertical-lr' : 'horizontal-tb',
+                  textOrientation: component.i.includes('vertical') ? 'upright' : 'mixed',
                 }}
               >
-                Save
-              </button>
-                )}
-        </div>
-    <div className={isPreview?"canvas-container-preview":"canvas-container"}  style={{ position: 'relative'}}>
-       
-      {selectedLayout ||savedlayout ? (
-        <ReactGridLayout
-          className="layout"
-          layout={getLayout()}
-          cols={12}
-          rowHeight={39}
-          width={845}
-          autoSize={true}
-          isDraggable={isConfig || isPreview? false:isOuterGridDraggableRef.current }  // Control whether the outer grid is draggable
-          isResizable={isConfig || isPreview? false:isOuterGridDraggableRef.current}
-          compactType={null}
-          preventCollision={true}
-          onLayoutChange={
-            onOuterLayoutChange}
-        >
-          {layout.map(sectionLayout => (
-            <div
-              key={sectionLayout.i}
-              data-grid={sectionLayout}
-              className={`section ${sectionLayout.i}`}
-              ref={(el) => contentRefs.current[sectionLayout.i] = el}
-              contentEditable
-              suppressContentEditableWarning={true}
-              // onBlur={() => handleBlur(sectionLayout.i)}
-              onMouseEnter={() => setHoveredSection(sectionLayout.i)}
-              onMouseLeave={() => setHoveredSection(null)}
-              style={{
-                border: hoveredSection === sectionLayout.i ? '2px dashed #007bff' : '2px solid transparent',
-                position: 'relative',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'flex-start',
-                backgroundColor: '#f0f0f0',
-                minHeight: '20px',
-                textAlign: 'center',
-                writingMode: sectionLayout.i.includes('vertical') ? 'vertical-lr' : 'horizontal-tb',
-                textOrientation: sectionLayout.i.includes('vertical') ? 'upright' : 'mixed',
-                // padding: '10px'
-                overflow: 'auto',
-              }}
-            >
-              { sectionLayout.elements.length>0 && (
-                <ReactGridLayout
-                  key={`nested-${sectionLayout.i}`}
-                  className="components"
-                  layout={sectionLayout.elements}
-                  cols={12}
-                  rowHeight={39}
-                  width={845}
-                  autoSize={true}
-                  isDraggable={isConfig || isPreview? false:isInnerGridDraggableRef.current}
-                  isResizable={isConfig || isPreview? false:isInnerGridDraggableRef.current}
-                  compactType={null}
-                  preventCollision={true}
-                  onDragStart={onNestedDragStart}
-                  onDragStop={onNestedDragStop}
-                  onLayoutChange={(newLayout) => onNestedLayoutChange(newLayout, sectionLayout.i)}
-                >
-                  {sectionLayout.elements.map(component => (
-                    <div
-                      key={component.i}
-                      data-grid={component}
-                      onMouseEnter={() => setHoveredSection(component.i)}
-                      onMouseLeave={() => setHoveredSection(null)}
-                      style={{
-                        // border: hoveredSection === component.i ? '2px dashed #007bff' : '2px solid transparent',
-                        // border: '1px dashed #28a745',
-                        backgroundColor: '#ffffff',
-                        textAlign: 'center',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        // padding: '1px',
-                        margin:'2px',
-                        minHeight: '50px',
-                      }}
-                    >
-                      {RenderComponent(component)}
-                    </div>
-                  ))}
-                </ReactGridLayout>
-              )}
-            </div>
-          ))}
-        </ReactGridLayout>
-      ) : (
-        <p >Please select a layout</p>
-      )}
-    </div>
+                {RenderComponent(component)}
+              </div>
+            ))}
+          </ReactGridLayout>
+        ) : (
+          <div>Select a layout</div>
+        )}
+      </div>
     </div>
   );
+  
 }
 
 export default Canvas;
-
-
-
-

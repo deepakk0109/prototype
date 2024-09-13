@@ -14,7 +14,7 @@ const StyleModel = ({ widgetId,state,setWidgetStyles}) => {
 
     const { widgetStyles } = state;
 
-    const handleSave = () => {debugger
+    const handleSave = () => {
         // updateCheckboxWidget(label, flag, size, labelFontSize, widgetId,widgetStyles);
     };
     const [modalIsOpen, setModalIsOpen] = useState(false);

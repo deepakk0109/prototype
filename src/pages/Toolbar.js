@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import '../styles/Toolbar.css'
+import layoutService from '../services/layoutService';
 
 // const layouts = [
 //   { id: 1, name: 'Header Only', sections: ['header'] },
@@ -201,9 +202,10 @@ const components = [
   ];
 
 const widgets=[
-  { id: 1, name: 'Chart', type: 'box', icon: '📊' },
+  { id: 1, name: 'Logo', type: 'logo', icon: '🖼️' },
+  { id: 2, name: 'Chart', type: 'box', icon: '📊' },
   // { id: 2, name: 'TextBox-Widget', type: 'textBoxWidget', icon: '📝' },
-  { id: 3, name: 'Form', type: 'form', icon: '📋' },
+  // { id: 3, name: 'Form', type: 'form', icon: '📋' },
   { id: 4, name:'Table', type:'table',icon:'🗃️'},
   { id: 5, name:'Checkbox', type:'checkbox',icon:'☑'},
   { id: 6, name: 'Dropdown', type: 'dropdown', icon: '⬇️' },
@@ -214,24 +216,39 @@ const widgets=[
   { id: 11, name: 'Radio Button', type: 'radiobutton', icon: '⚫'},
   { id: 12, name: 'File', type: 'file', icon: '📄' },
   { id: 13, name: 'Text-editor', type: 'texteditor', icon: '📝' },
-  { id: 14, name: 'Data Grid', type: 'datagrid', icon: '🗄️' },
+  // { id: 14, name: 'Data Grid', type: 'datagrid', icon: '🗄️' },
   // { id: 15, name: 'Carousel', type: 'carousel', icon: '🖼️🖼️' },
 
 
 
 ]
 
-function Toolbar({ setSelectedLayout, setSelectedComponent, setSelectedWidget,layout,handleSaveLayout }) {
+
+function Toolbar({ setSavedlayout,setSelectedLayout, setSelectedComponent, setSelectedWidget,layout,handleSaveLayout }) {
   const location = useLocation();
-//   useEffect(() => {
-//     console.log("1stcomp",selectedComponent);
-//   }, [selectedComponent]);
-//   console.log("1stcomp",selectedComponent);
+  const [templates, setTemplates]=useState(null);
+  const handleFetchLayouts = async () => {debugger
+    try {
+      const layouts = await layoutService.getLayouts();
+      if (layouts) {
+        // const fetchedLayout = layouts[layouts.length - 1]
+        setTemplates(layouts);  // Set the layout with static items
+        console.log('Fetched layouts:', layouts);
+      }
+    } catch (error) {
+      console.error('Failed to fetch layouts:', error);
+    }
+  };
+
+  useEffect(() => {
+    handleFetchLayouts();
+  }, []);
+
   return (
     <div className="toolbar">
       {location.pathname === '/layouts' && (
         <>
-          <h2>Layouts</h2>
+          <div style={{fontWeight:'bold'}}>Layouts</div>
           <ul>
             {layouts.map(layout => (
                 <li key={layout.id} onClick={ () =>{ setSelectedLayout(null);  setTimeout(() => {
@@ -245,7 +262,7 @@ function Toolbar({ setSelectedLayout, setSelectedComponent, setSelectedWidget,la
       )}
       {location.pathname === '/components' && (
         <>
-          <h2>Components</h2>
+          <div style={{fontWeight:'bold'}}>Components</div>
           <ul>
           {components.map(component => (
               <li key={component.id} onClick={() =>{ setSelectedComponent(null);  setTimeout(() => {
@@ -259,7 +276,7 @@ function Toolbar({ setSelectedLayout, setSelectedComponent, setSelectedWidget,la
       )}
       {location.pathname === '/widgets' && (
         <>
-          <h2>Widgets</h2>
+          <div style={{fontWeight:'bold'}}>Widgets</div>
           <ul>
           {widgets.map(widget => (
               <li key={widget.id} onClick={() => {
@@ -271,6 +288,27 @@ function Toolbar({ setSelectedLayout, setSelectedComponent, setSelectedWidget,la
                   setSelectedWidget(widget);
                 }, 0)}}>
                 {widget.icon} {widget.name}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      {location.pathname === '/cms' && (
+        <>
+          <div style={{fontWeight:'bold'}}>Templates</div>
+          <ul>
+          {templates?.map((template,index) => (
+              <li key={template._id} onClick={() => {
+                // Set state to null first
+                setSavedlayout(null);
+            
+                // Then set it to the clicked widget after a slight delay
+                setTimeout(() => {
+                  localStorage.setItem('id', JSON.stringify(template._id));
+                  setSavedlayout(template.layoutItems);
+                }, 0)}}>
+               Template {index+1}
               </li>
             ))}
           </ul>

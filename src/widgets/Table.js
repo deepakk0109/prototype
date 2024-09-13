@@ -8,7 +8,7 @@ import { Provider } from 'react-redux';
 import { store } from '../redux/store';
 
 
-const Table = ({ updateTableWidget, widgetId, tableDataUrl }) => {
+const Table = ({onClick, updateTableWidget, widgetId, tableDataUrl }) => {
   const dispatch = useDispatch();
   const tableState = useSelector((state) => state.table[widgetId]) || {};
   const { data = [], columns = [], url } = tableState;
@@ -82,7 +82,7 @@ const Table = ({ updateTableWidget, widgetId, tableDataUrl }) => {
         </>
       )}
 
-      <table className="data-table"  onClick={() => toggleSettings()} style={{ height: '100%', width: '100%' }}>
+      <table className="data-table"  onClick={()=>{onClick();toggleSettings()}} style={{ height: '100%', width: '100%' }}>
         <thead style={{ width: '100%', height: '100%' }}>
           <tr>
             {columns.length > 0 ? (

@@ -1,173 +1,3 @@
-// import React, { useEffect, useState } from 'react';
-// import { useDispatch, useSelector } from 'react-redux';
-// import { setFile, setFileBackendUrl, setUploadButtonStyle } from '../redux/slices/fileSlice';
-// import '../styles/SidebarStyles.css'; // CSS for the sidebar
-
-// function File({ updateFileWidget, isConfig, ButtonsStyle, widgetId, BackendUrl }) {
-//   const dispatch = useDispatch();
-//   const fileState = useSelector((state) => state.file[widgetId]) || {};
-//   const { file, fileBackendUrl, uploadButtonStyle = {} } = fileState; // Ensure uploadButtonStyle has a default empty object
-
-//   const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Sidebar state
-//   const [styleSettings, setStyleSettings] = useState({
-//     ...uploadButtonStyle,
-//     height: uploadButtonStyle.height || '',
-//     width: uploadButtonStyle.width || '',
-//     backgroundColor: uploadButtonStyle.backgroundColor || '#007bff',
-//     fontSize: uploadButtonStyle.fontSize || '16px',
-//     padding: uploadButtonStyle.padding || '10px 15px',
-//     margin: uploadButtonStyle.margin || '10px',
-//   });
-
-//   useEffect(() => {
-//     dispatch(setFileBackendUrl({ widgetId, fileBackendUrl: BackendUrl || '' }));
-//     dispatch(setUploadButtonStyle({
-//       widgetId, 
-//       uploadButtonStyle: ButtonsStyle || {
-//         backgroundColor: '#007bff',
-//         color: '#fff',
-//         padding: '10px 15px',
-//         border: 'none',
-//         borderRadius: '5px',
-//       },
-//     }));
-//   }, [ButtonsStyle, widgetId, BackendUrl, dispatch]);
-
-//   function handleChange(event) {
-//     dispatch(setFile({ widgetId, file: event.target.files[0] }));
-//   }
-
-//   function handleSubmit(event) {
-//     event.preventDefault();
-//     if (!fileBackendUrl) {
-//       alert('Please provide a backend URL.');
-//       return;
-//     }
-
-//     const formData = new FormData();
-//     formData.append('file', file);
-
-//     fetch(fileBackendUrl, {
-//       method: 'POST',
-//       body: formData,
-//       headers: { 'Accept': 'application/json' },
-//     })
-//       .then((response) => response.json())
-//       .then((data) => {
-//         if (data.success) {
-//           console.log('Upload successful:', data);
-//         } else {
-//           console.error('Upload failed:', data.message);
-//           alert(`Upload failed: ${data.message}`);
-//         }
-//       })
-//       .catch((error) => {
-//         console.error('Error uploading file:', error);
-//         alert('Error uploading file. Please check the console for details.');
-//       });
-//   }
-
-//   const toggleSidebar = () => {
-//     setIsSidebarOpen(!isSidebarOpen);
-//   };
-
-//   const handleStyleChange = (property, value) => {
-//     const updatedStyles = { ...styleSettings, [property]: value };
-//     setStyleSettings(updatedStyles);
-//     dispatch(setUploadButtonStyle({ widgetId, uploadButtonStyle: updatedStyles }));
-//   };
-
-//   return (
-//     <div className="file-container">
-//       {isConfig && (
-//         <button className="settings-button" onClick={toggleSidebar}>
-//           ⚙️
-//         </button>
-//       )}
-
-//       <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center' }}>
-//         <input type="file" onChange={handleChange} style={{ marginRight: '10px' }} />
-//         {file && (
-//           <button
-//             type="submit"
-//             style={{ ...styleSettings, marginLeft: '10px' }}
-//           >
-//             Upload
-//           </button>
-//         )}
-//       </form>
-
-//       {isSidebarOpen && (
-//         <div className="sidebar">
-//           <h3>Style Settings</h3>
-//           <div className="style-row">
-//             <label>Height:</label>
-//             <input
-//               type="text"
-//               value={styleSettings.height}
-//               onChange={(e) => handleStyleChange('height', e.target.value)}
-//             />
-//           </div>
-//           <div className="style-row">
-//             <label>Width:</label>
-//             <input
-//               type="text"
-//               value={styleSettings.width}
-//               onChange={(e) => handleStyleChange('width', e.target.value)}
-//             />
-//           </div>
-//           <div className="style-row">
-//             <label>Background Color:</label>
-//             <input
-//               type="color"
-//               value={styleSettings.backgroundColor}
-//               onChange={(e) => handleStyleChange('backgroundColor', e.target.value)}
-//             />
-//           </div>
-//           <div className="style-row">
-//             <label>Font Size:</label>
-//             <input
-//               type="number"
-//               value={styleSettings.fontSize}
-//               onChange={(e) => handleStyleChange('fontSize', e.target.value)}
-//             />
-//           </div>
-//           <div className="style-row">
-//             <label>Padding:</label>
-//             <input
-//               type="text"
-//               value={styleSettings.padding}
-//               onChange={(e) => handleStyleChange('padding', e.target.value)}
-//             />
-//           </div>
-//           <div className="style-row">
-//             <label>Margin:</label>
-//             <input
-//               type="text"
-//               value={styleSettings.margin}
-//               onChange={(e) => handleStyleChange('margin', e.target.value)}
-//             />
-//           </div>
-//           <button className="close-sidebar" onClick={toggleSidebar}>Close Sidebar</button>
-//         </div>
-//       )}
-//     </div>
-//   );
-// }
-
-// export  {File};
-
-
-
-
-
-
-
-
-
-
-
-
 import React, { useState } from 'react';
 import Modal from 'react-modal';
 import '../styles/Form.css'
@@ -207,7 +37,7 @@ console.log("backend link",formBackendLink);
     console.log('Submit to:', backendLink);
   };
 
-  const handleModalSubmit = () => {debugger
+  const handleModalSubmit = () => {
     // setFormActionModalIsOpen(false);
     console.log('Form Data:', inputs);
     console.log('Submit to:', backendLink);
@@ -244,7 +74,7 @@ console.log("backend link",formBackendLink);
                  ⚙️
                </button>
         )}
-      <h3>Form</h3>
+      <h4>Reach out to us</h4>
       {inputs.map((input) => (
         <div key={input.id} className="input-group">
           <label>{input.label}</label>
@@ -336,4 +166,7 @@ console.log("backend link",formBackendLink);
   );
 };
 
+const FormSidebar=()=>{
+
+}
 export default Form;

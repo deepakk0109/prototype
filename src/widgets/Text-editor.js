@@ -11,7 +11,7 @@ import { setTextEditorContent } from '../redux/slices/texteditorSlice';
 // Set the app element for accessibility
 Modal.setAppElement('#root');
 
-const TextEditor = ({ isConfig, isPreview, updateTextEditorWidget, widgetId, TextEditorContent }) => {
+const TextEditor = ({ onClick,isConfig, isPreview, updateTextEditorWidget, widgetId, TextEditorContent }) => {
   const dispatch = useDispatch();
   const editorValue = useSelector((state) => state.textEditor[widgetId]?.content || TextEditorContent || RichTextEditor.createEmptyValue());
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -65,7 +65,7 @@ const TextEditor = ({ isConfig, isPreview, updateTextEditorWidget, widgetId, Tex
   };
 
   return (
-    <div style={{ width: '100%', height: '100%' }}>
+    <div onClick={()=>{onClick();toggleSettings()}} style={{ width: '100%', height: '100%' }}>
       {isConfig && (
         <button
           style={{
@@ -91,10 +91,11 @@ const TextEditor = ({ isConfig, isPreview, updateTextEditorWidget, widgetId, Tex
         dangerouslySetInnerHTML={{ __html: editorValue.toString('html') }}
         onInput={handleContentChange}
         style={{
-          marginTop: '20px',
+          // marginTop: '20px',
           width: '100%',
           height: '100%',
           boxSizing: 'border-box',
+          fontSize:'16px',
         }}
       />
     </div>
@@ -114,7 +115,7 @@ const TextEditorSidebar =({widgetId,updateTextEditorWidget,handleEditorChange})=
   const editorValue = useSelector((state) => state.textEditor[widgetId]?.content || RichTextEditor.createEmptyValue());
   // const [editorValue, setEditorValue] = useState(RichTextEditor.createEmptyValue());
   const editorRef = useRef(null); // Create a ref for the editor
-  const handleSave = () => {debugger
+  const handleSave = () => {
     const htmlContent = editorValue.toString('html');
     updateTextEditorWidget(widgetId, htmlContent);
     
@@ -127,7 +128,7 @@ const TextEditorSidebar =({widgetId,updateTextEditorWidget,handleEditorChange})=
       onChange={handleEditorChange}
       ref={editorRef} // Apply the ref here if needed
     />
-    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between'}}>
       {/* <button
         style={{ backgroundColor: 'white', border: '1px solid #ccc', padding: '5px 10px' }}
         onClick={closeModal}

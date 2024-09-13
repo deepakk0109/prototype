@@ -52,6 +52,13 @@ const radiobuttonSlice = createSlice({
       const { widgetId } = action.payload;
       state[widgetId] = {};
     },
+    setWidgetStyles:(state,action)=>{
+      const { widgetId, widgetStyles } = action.payload;
+      state[widgetId] = {
+        ...state[widgetId],
+        widgetStyles: widgetStyles,
+      };
+    },
   },
 });
 
@@ -63,6 +70,7 @@ export const {
     setRadioLabel,
     resetRadiobutton,
     setSelectedRadioOption,
+    setWidgetStyles,
 } = radiobuttonSlice.actions;
 
 export default radiobuttonSlice.reducer;

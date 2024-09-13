@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { FaHome, FaPlus, FaLayerGroup, FaFont, FaDatabase, FaFileAlt } from 'react-icons/fa';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import '../styles/DashboardPage.css';
-import Canvas from './Canvas';
+import Canvas from './Canvas3';
 import Toolbar from './Toolbar';
 import Preview from './Preview';
+import layoutService from '../services/layoutService';
 
 const DashboardPage = () => {
   const [selectedLayout, setSelectedLayout] = useState(null);
@@ -21,7 +22,29 @@ const DashboardPage = () => {
     console.log('Layout saved:', layout);
     // Additional saving logic...
   };
- console.log("Dash layout",layout);
+  const handleFetchLayouts = async () => {
+    try {
+      const storedId = localStorage.getItem('id');
+    if(storedId){
+      const id = storedId?JSON.parse(storedId):'';
+      const response = await layoutService.getLayoutbyId(id);
+      if (response ) {
+        const fetchedLayout = response.layoutItems
+        
+        setLayout(fetchedLayout);  // Set the layout with static items
+        // console.log('Fetched layout:', fetchedLayout);
+      }
+    }
+   } catch (error) {
+      console.error('Failed to fetch layouts:', error);
+    }
+  };
+  
+
+  useEffect(() => {
+    handleFetchLayouts();
+  }, []);
+
   return (
     <div className="dashboard-container">
     {isPreview?(
@@ -47,7 +70,9 @@ const DashboardPage = () => {
                 <span className="sidebar-text">Font and Colors</span>
               </div>
               <div className="sidebar-item">
+              <Link to="/cms">
                 <FaDatabase className="icon" />
+                </Link>
                 <span className="sidebar-text">CMS</span>
               </div>
             </aside>
@@ -58,6 +83,7 @@ const DashboardPage = () => {
                 setSelectedComponent={setSelectedComponent}
                 setSelectedWidget={setSelectedWidget}
                 handleSaveLayout={handleSaveLayout}
+                setSavedlayout={setLayout}
               />
             </div>
           </>
@@ -67,7 +93,7 @@ const DashboardPage = () => {
           selectedLayout={selectedLayout}
           selectedComponent={selectedComponent}
           selectedWidget={selectedWidget}
-          setLayout={layout}
+          savedlayout={layout}
         />
 
      <aside id="sidebar" className="sidebar right-sidebar"></aside>

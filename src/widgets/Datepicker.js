@@ -3,9 +3,9 @@ import { useDispatch, useSelector } from "react-redux";
 import DatePicker from "react-datepicker";
 import { setDate } from "../redux/slices/datepickerSlice";
 import "react-datepicker/dist/react-datepicker.css";
-import '../styles/DatePicker.css'; // Import your custom CSS file
+// import '../styles/DatePicker.css'; // Import your custom CSS file
 
-const Datepicker = ({ SelectedDate, updateDateWidget, widgetId, isPreview }) => {
+const Datepicker = ({onClick, SelectedDate, updateDateWidget, widgetId, isPreview }) => {
   const dispatch = useDispatch();
 
   // Get selected date from Redux and ensure it's a valid date object
@@ -29,9 +29,10 @@ const Datepicker = ({ SelectedDate, updateDateWidget, widgetId, isPreview }) => 
   };
 
   return (
+    <div onClick={onClick()}>
     <DatePicker
       selected={selectedDate} // Ensure selected is a Date object
-      onChange={handleChange}
+      onChange={()=>{handleChange()}}
       showTimeSelect // Enables time selection
       timeFormat="HH:mm" // Time format (24-hour)
       timeIntervals={15} // Time interval for the time picker (15 minutes)
@@ -42,6 +43,7 @@ const Datepicker = ({ SelectedDate, updateDateWidget, widgetId, isPreview }) => 
       timeCaption="Time"
       placeholderText="Select date and time"
     />
+    </div>
   );
 };
 

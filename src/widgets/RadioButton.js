@@ -9,15 +9,19 @@ import {
     setRadioFontSize,
     setRadioLabel,
     setSelectedRadioOption,
+    setWidgetStyles,
     resetRadiobutton,
 } from '../redux/slices/radiobuttonSlice'
 import { useDispatch, useSelector } from 'react-redux';
+import Modal from 'react-modal';
+import { StyleModel } from './StyleModel';
 
+Modal.setAppElement('#root');
 
-const RadioButton = ({ updateRadioButtonWidget, widgetId, label, options, selectedOption,fontSize,dataSource,ApiUrl,isConfig }) => {
+const RadioButton = ({onClick, updateRadioButtonWidget, widgetId, label, options, selectedOption,fontSize,dataSource,ApiUrl,isConfig,Styles }) => {
     const dispatch=useDispatch();
     const radiobuttonState=useSelector((state)=>state.radiobutton[widgetId]) || {};
-    const {radioOptions,radiodataSource,radioApiUrl,radioFontSize,radioLabel,selectedRadioOption}=radiobuttonState;
+    const {radioOptions,radiodataSource,radioApiUrl,radioFontSize,radioLabel,selectedRadioOption,widgetStyles}=radiobuttonState;
 
     useEffect(() => {
         dispatch(setRadioOptions({ widgetId, radioOptions: options || [] }));
@@ -26,7 +30,18 @@ const RadioButton = ({ updateRadioButtonWidget, widgetId, label, options, select
         dispatch(setRadioFontSize({ widgetId, radioFontSize: fontSize || '16px' }));
         dispatch(setRadioLabel({ widgetId, radioLabel: label || '' }));
         dispatch(setSelectedRadioOption({widgetId,selectedRadioOption:selectedOption || ''}));
-      }, [options, dataSource, ApiUrl, fontSize, label, dispatch, widgetId]);
+        dispatch(setWidgetStyles({widgetId,widgetStyles:Styles ||{
+            // height:'',
+            // width:'',
+            // backgroundColor: '',
+            // color: '',
+            // padding: '',
+            // margin:'',
+            // fontSize:'',
+            // border: '',
+            // borderRadius: '',
+        }}))
+      }, [options, dataSource, ApiUrl, fontSize, label, dispatch, widgetId,Styles]);
     
       useEffect(()=>{
         if (radiodataSource === 'api' && radioApiUrl ) {
@@ -83,7 +98,7 @@ const toggleSettings = () => {
           );
       };
     return (
-        <div  onClick={toggleSettings} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', position: 'relative', fontSize:radioFontSize}}>
+        <div  onClick={()=>{onClick();toggleSettings()}} style={{...widgetStyles, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', fontSize:radioFontSize}}>
            {isConfig && ( <button
                 style={{
                     position: 'absolute',
@@ -103,7 +118,7 @@ const toggleSettings = () => {
 
             <div>
                 <label>{radioLabel}</label>
-                { radioOptions && radioOptions.length > 0 ?(radioOptions.map(option => (
+                { radioLabel || (radioOptions && radioOptions.length > 0) ?(radioOptions.map(option => (
                     <div key={option.id} style={{ margin: '5px 0', textAlign: 'left' }}>
                         <input
                             type="radio"
@@ -128,7 +143,7 @@ const toggleSettings = () => {
 const RadioButtonSidebar=({updateRadioButtonWidget,widgetId,fetchOptionsFromApi})=>{
     const dispatch=useDispatch();
     const radiobuttonState=useSelector((state)=>state.radiobutton[widgetId]) || {};
-    const {radioOptions,radiodataSource,radioApiUrl,radioFontSize,radioLabel,selectedRadioOption}=radiobuttonState;
+    const {radioOptions,radiodataSource,radioApiUrl,radioFontSize,radioLabel,selectedRadioOption,widgetStyles}=radiobuttonState;
     const [apiError, setApiError] = useState(null);
 
     const handleSave = () => {
@@ -136,13 +151,22 @@ const RadioButtonSidebar=({updateRadioButtonWidget,widgetId,fetchOptionsFromApi}
             fetchOptionsFromApi();
         }
         if(updateRadioButtonWidget){
-            updateRadioButtonWidget(radioLabel, radioOptions, selectedRadioOption,radiodataSource,radioApiUrl,radioFontSize, widgetId);
+            updateRadioButtonWidget(radioLabel, radioOptions, selectedRadioOption,radiodataSource,radioApiUrl,radioFontSize, widgetId,widgetStyles);
         }
+    };
+    const [modalIsOpen, setModalIsOpen] = useState(false);
+  
+    const openSettingsModal = () => {
+      setModalIsOpen(true);
+    };
+  
+    const closeSettingsModal = () => {
+      setModalIsOpen(false);
     };
 
 return(
     <div style={{padding:'10px'}}>
-    <h2>Radio Button Configuration</h2>
+    <div style={{ fontWeight: 'bold' }}>Radio Button</div>
 
     {/* Input for Radio Button Label */}
     <div style={{ marginTop: '10px' }}>
@@ -152,7 +176,7 @@ return(
                 type="text"
                 value={radioLabel}
                 onChange={(e) => dispatch(setRadioLabel({ widgetId, radioLabel: e.target.value }))}
-                style={{ marginLeft: '10px', width: '100%' }}
+                style={{...inputStyles}}
             />
         </label>
     </div>
@@ -165,6 +189,7 @@ return(
     onChange={(e) => dispatch(setRadioFontSize({ widgetId, radioFontSize: e.target.value }))}
     placeholder="Enter font size"
     className="fontsize-input"
+    style={{...inputStyles}}
     />
     </div>
 
@@ -172,7 +197,7 @@ return(
     <div style={{ marginTop: '10px' }}>
         <label>
             Data Source:
-            <select value={radiodataSource} onChange={(e)=>dispatch(setRadiodataSource({ widgetId, radiodataSource: e.target.value }))} style={{ marginLeft: '10px', width: '100%' }}>
+            <select value={radiodataSource} onChange={(e)=>dispatch(setRadiodataSource({ widgetId, radiodataSource: e.target.value }))}  style={{...inputStyles, width:'97%'}}>
                 <option value="manual">Manual</option>
                 <option value="api">Connect to API</option>
             </select>
@@ -188,7 +213,7 @@ return(
                     type="text"
                     value={radioOptions.map(opt => opt.label).join(', ')}
                     onChange={(e) => dispatch(setRadioOptions({widgetId,radioOptions:e.target.value.split(',').map((label, index) => ({ id: index, label: label.trim() }))}))}
-                    style={{ marginLeft: '10px', width: '100%' }}
+                    style={{...inputStyles}}
                 />
             </label>
         </div>
@@ -203,14 +228,45 @@ return(
                     type="text"
                     value={radioApiUrl}
                     onChange={(e) => dispatch(setRadioApiUrl({ widgetId, radioApiUrl: e.target.value }))}
-                    style={{ marginLeft: '10px', width: '100%' }}
+                    style={{...inputStyles}}
                 />
             </label>
             {apiError && <div style={{ color: 'red', marginTop: '10px' }}>{apiError}</div>}
         </div>
     )}
+           <div style={{ marginBottom: '10px' }}>Add styles  <button onClick={openSettingsModal}  style={{ backgroundColor: 'green', color: 'white', border: 'none', padding: '1px 10px', cursor: 'pointer' }}>+</button></div>
+        <button onClick={()=>{handleSave(); closeSettingsModal()}}  style={{ backgroundColor: 'blue', borderRadius: '5px', color: 'white', border: 'none', padding: '10px 15px', cursor: 'pointer' }} >
+          Save
+        </button>
+         <Modal
+        isOpen={modalIsOpen}
+        onRequestClose={closeSettingsModal}
+        contentLabel="Settings Modal"
+        style={{
+          overlay: {
+            backgroundColor: 'rgba(0, 0, 0, 0)', // Transparent background
+          },
+          content: {
+            top: '50%',
+            right: '10px', // Distance from the right edge
+            left: 'auto', // Remove left alignment
+            bottom: 'auto',
+            marginRight: '0', // No margin on the right
+            transform: 'translateY(-50%)', // Center vertically
+            width: '200px',
+            pointerEvents: 'auto', // Enable pointer events for the modal content
+            overflowY:'auto',
+          },
+        }}
+      >
+        <StyleModel widgetId={widgetId} setWidgetStyles={setWidgetStyles} state={radiobuttonState}/>
+        <button onClick={()=>{handleSave(); closeSettingsModal()}} style={{ backgroundColor: 'green', color: 'white', border: 'none', padding: '5px 10px', cursor: 'pointer' }} >
+          Save
+        </button>
+        <button  onClick={()=>{ closeSettingsModal()}} style={{alignItems:'right', backgroundColor: 'red', color: 'white', border: 'none', padding: '5px 10px', cursor: 'pointer' }}>Cancel</button>
+        </Modal>
 
-    <div style={{ marginTop: '20px' }}>
+    {/* <div style={{ marginTop: '20px' }}>
         <button
             onClick={handleSave}
             style={{
@@ -225,8 +281,15 @@ return(
         >
             Save
         </button>
-    </div>
+    </div> */}
     </div>
 )
+}
+const inputStyles={
+        width: '90%',
+        padding: '8px',
+        border: '1px solid #ddd',
+        borderRadius: '4px',
+        marginBottom:'5px',
 }
 export  {RadioButton,RadioButtonSidebar};

@@ -47,7 +47,7 @@ export default function Datagrid() {
     setRows(updatedRows);
   };
 
-  const openModal = (columnKey) => {debugger
+  const openModal = (columnKey) => {
     setSelectedColumnKey(columnKey);
     setModalIsOpen(true);
   };
@@ -100,10 +100,11 @@ export default function Datagrid() {
   rows={rows}
   onRowsChange={setRows}
   onCellClick={(e, params) => {
+
     if (!params) return;
     
-    const { row, column } = params; // Check if these are available
-
+    const { row, column } = e; // Check if these are available
+    openModal(column.key);
     if (row && column) {
       const rowIdx = rows.findIndex(r => r === row); // Find index if needed
       const columnIdx = getColumns().findIndex(c => c === column); // Find index if needed

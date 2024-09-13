@@ -17,7 +17,7 @@ import { setWidgetStyles } from '../redux/slices/dropdownSlice';
 
 Modal.setAppElement('#root');
 
-const Dropdown = ({ updateDropdownWidget, isConfig, widgetId, Source, Url, Options, FontSize, Label,Styles }) => {debugger
+const Dropdown = ({ onClick,updateDropdownWidget, isConfig, widgetId, Source, Url, Options, FontSize, Label,Styles }) => {
   const dispatch = useDispatch();
   const dropdownState = useSelector((state) => state.dropdown[widgetId]) || {};
 
@@ -77,7 +77,7 @@ const Dropdown = ({ updateDropdownWidget, isConfig, widgetId, Source, Url, Optio
   };
 
   return (
-    <div className="dropdown-container" onClick={() => toggleSettings()} style={{...widgetStyles}}>
+    <div className="dropdown-container" onClick={()=>{onClick();toggleSettings()}} style={{...widgetStyles}}>
       {isConfig && (
         <button
           style={{
@@ -96,7 +96,7 @@ const Dropdown = ({ updateDropdownWidget, isConfig, widgetId, Source, Url, Optio
       )}
 
       <label style={{ fontSize: dropdownFontSize }}>{label}</label>
-      <select className="dropdown" style={{color:widgetStyles?.color, fontSize: dropdownFontSize }}>
+      <select className="dropdown" style={{color:widgetStyles?.color, backgroundColor:widgetStyles?.backgroundColor, fontSize: dropdownFontSize }}>
         {dropdownOptions?.map((option) => (
           <option key={option.id} value={option.value}>
             {option.value}
@@ -642,7 +642,7 @@ export { Dropdown,DropdownSidebar };
 //     setDropdownOptions(dropdownOptions.filter((option) => option.id !== id));
 //   };
 
-//   const handleModalSubmit = () => {debugger
+//   const handleModalSubmit = () => {
 //     if (dropdownSource === 'api' && dropdownUrl) {
 //       fetch(dropdownUrl)
 //         .then((response) => response.json())

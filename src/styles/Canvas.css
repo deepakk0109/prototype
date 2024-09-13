@@ -1,4 +1,5 @@
-/* .canvas-container {
+
+.canvas-container  {
   position: relative;
   overflow: hidden;
   flex: 1;
@@ -6,51 +7,46 @@
   border: 1px solid #b2ebf2;
   display: flex;
   font-size: 24px;
+  width: 845px; /* Set to 100% width for responsive scaling */
+  height: auto;
+  aspect-ratio: 16 / 11; /* Maintain a specific aspect ratio */
+  overflow-y: auto;
 }
-.canvas-container {
-  width: 65vw;
-  height: 100vh;
+/* .canvas-container-preview  {
+  position: relative;
+  overflow: hidden;
+  background-color: white;
+  border: 1px solid #b2ebf2;
+  display: flex;
+  font-size: 24px;
+  width: 100%; 
+  height: auto;
+  aspect-ratio: 16 / 11; 
+  overflow-y: auto;
 } */
 
-/* Default styles for canvas-container */
-.canvas-container {
-  position: relative;
-  overflow: hidden;
-  flex: 1;
-  background-color: white;
-  border: 1px solid #b2ebf2;
-  display: flex;
-  font-size: 24px;
-  width: 845px;
-  height: 100vh;
-}
-
-
 /* Small tablets and larger phones */
-
-
-/* Phones and smaller devices */
 @media (min-width: 768px) {
   .canvas-container-preview {
-    width: 845px;
-    height: auto;
+    width: 100%;
+    /* height: 90vh;  */
+    /* aspect-ratio: 16 / 11; */
+    font-size: 22px;
+    overflow-y: auto;
   }
 }
 
-@media (max-width: 1024px) and (min-width: 769px) {
-  .canvas-container-preview {
-    width: 100%;
-    height: 100vh; /* Adjust height as necessary */
-    font-size: 20px; /* Slightly smaller font size for tablets */
-  }
-}
+/* Tablets */
+
 
 /* Large phones and smaller tablets */
 @media (max-width: 768px) {
   .canvas-container-preview {
     width: 100%;
-    height: auto;
-    font-size: 18px; /* Adjust font size for smaller devices */
+    /* height: 80vh; */
+    /* aspect-ratio: 16 / 11; */
+    font-size: 18px;
+    overflow-y: auto;
   }
 }
 
@@ -58,8 +54,10 @@
 @media (max-width: 576px) {
   .canvas-container-preview {
     width: 100%;
-    height: 100vh;
-    font-size: 16px; /* Further reduce font size for very small screens */
+    /* height: 75vh; */
+    /* aspect-ratio: 16 / 11; */
+    font-size: 16px;
+    overflow-y: auto;
   }
 }
 
@@ -67,11 +65,12 @@
 @media (max-width: 360px) {
   .canvas-container-preview {
     width: 100%;
-    height: 100vh;
-    font-size: 14px; /* Adjust font size for very small screens */
+    /* height: 70vh;  */
+    /* aspect-ratio: 16 / 11; */
+    font-size: 14px;
+    overflow-y: auto;
   }
 }
-
 
 
 

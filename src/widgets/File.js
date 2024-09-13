@@ -11,7 +11,7 @@ import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { store } from '../redux/store';
 Modal.setAppElement('#root');
-function File({ updateFileWidget,isConfig, ButtonsStyle,widgetId,BackendUrl }) {
+function File({onClick, updateFileWidget,isConfig, ButtonsStyle,widgetId,BackendUrl }) {
   const dispatch=useDispatch();
   const fileState=useSelector((state)=>state.file[widgetId]) || {};
   const {file,fileBackendUrl,uploadButtonStyle}=fileState;
@@ -87,7 +87,7 @@ function File({ updateFileWidget,isConfig, ButtonsStyle,widgetId,BackendUrl }) {
       );
   };
   return (
-    <div className="file" onClick={toggleSettings} style={{...uploadButtonStyle,position: 'relative', width: '100%', height: '100%' }}>
+    <div className="file" onClick={()=>{onClick();toggleSettings()}} style={{...uploadButtonStyle,position: 'relative', width: '100%', height: '100%' }}>
       {isConfig && (
         <button
           style={{

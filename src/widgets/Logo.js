@@ -8,7 +8,7 @@ import { Provider } from 'react-redux';
 import { store } from '../redux/store';
 import { useLocation } from 'react-router-dom';
 
-const ImagePicker = ({ onClick,isConfig, updateImageWidget, widgetId, DataUrl }) => {
+const Logo = ({ onClick,isConfig, updateImageWidget, widgetId, DataUrl }) => {
   const dispatch = useDispatch();
   const imagepickerState = useSelector((state) => state.imagepicker[widgetId]) || {};
   const { imageSrc } = imagepickerState;
@@ -44,7 +44,7 @@ const ImagePicker = ({ onClick,isConfig, updateImageWidget, widgetId, DataUrl })
     root.render(
       <React.StrictMode>
         <Provider store={store}>
-          <ImagePickerSidebar
+          <LogoSidebar
             updateImageWidget={updateImageWidget}
             widgetId={widgetId}
             saveImage={saveImage}
@@ -62,10 +62,10 @@ const ImagePicker = ({ onClick,isConfig, updateImageWidget, widgetId, DataUrl })
             src={imageSrc}
             alt="Selected"
             style={{
-              width: '100%',
-              height: '100%',
-              // maxHeight:'100%',
-              // maxWidth:'100%',
+            //   width: '100%',
+            //   height: '100%',
+              maxHeight:'100%',
+              maxWidth:'100%',
               // objectFit: 'contain',
               cursor: isConfig ? 'pointer' : 'default',
             }}
@@ -107,7 +107,7 @@ const ImagePicker = ({ onClick,isConfig, updateImageWidget, widgetId, DataUrl })
 
 
 
-const ImagePickerSidebar=({widgetId,updateImageWidget,saveImage})=>{
+const LogoSidebar=({widgetId,updateImageWidget,saveImage})=>{
   const dispatch=useDispatch();
   const imagepickerState=useSelector((state)=>state.imagepicker[widgetId]) || {};
   const {imageSrc}=imagepickerState;
@@ -138,4 +138,4 @@ const ImagePickerSidebar=({widgetId,updateImageWidget,saveImage})=>{
   );
 }
 
-export {ImagePicker,ImagePickerSidebar};
+export {Logo,LogoSidebar};

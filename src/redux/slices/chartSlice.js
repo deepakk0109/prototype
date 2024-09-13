@@ -122,6 +122,13 @@ const chartSlice = createSlice({
         yAxisName: yAxisName,
       }
     },
+    setWidgetStyles:(state,action)=>{
+      const { widgetId, widgetStyles } = action.payload;
+      state[widgetId] = {
+        ...state[widgetId],
+        widgetStyles: widgetStyles,
+      };
+    },
     resetChart: (state, action) => {
         const { widgetId } = action.payload;
         state[widgetId] = {};
@@ -160,6 +167,7 @@ export const {
   setParametery,
   setXAxisName,
   setYAxisName,
+  setWidgetStyles,
 } = chartSlice.actions;
 
 export default chartSlice.reducer;
