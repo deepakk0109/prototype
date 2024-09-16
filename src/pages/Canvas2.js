@@ -30,6 +30,7 @@ import { FormBuilder } from '../widgets/FormBuilder';
 import { TextBox } from '../widgets/rte';
 import FormBuilderComponent from '../widgets/fb';
 import { Logo } from '../widgets/Logo';
+import {Button} from '../components/Button';
 
 
 const ReactGridLayout = WidthProvider(GridLayout);
@@ -905,8 +906,81 @@ const updateTextEditorWidget=(widgetId,htmlContent) => {
     )
   );
 }
+const updateButtonComponent=(widgetId,widgetStyles,buttonLabel,onClickAction)=>{
+  setLayoutConfig(prevConfig => {
+      const updatedElements = prevConfig.main.elements.map(widget => {
+        if (widget.i === widgetId) {
+          return {
+            ...widget,
+            buttonLabel: buttonLabel,
+            Styles: widgetStyles,
+            buttononClickAction:onClickAction,
+          };
+        }
+        return widget;
+      });
+  
+      return {
+        ...prevConfig,
+        main: {
+          ...prevConfig.main,
+          elements: updatedElements,
+        },
+      };
+    });
+  
+    setWidgets(prevWidgets => 
+      prevWidgets.map(widget => 
+        widget.i === widgetId 
+        ? { 
+          ...widget,
+          buttonLabel: buttonLabel,
+          Styles: widgetStyles,
+          buttonOnClickAction:onClickAction,
+        } 
+        : widget
+      )
+    );
+}
 
-
+const updateLineComponent=(widgetId,lineWidth,lineHeight,lineColor,widgetStyles)=>{
+  setLayoutConfig(prevConfig => {
+      const updatedElements = prevConfig.main.elements.map(widget => {
+        if (widget.i === widgetId) {
+          return {
+            ...widget,
+            lineWidth: lineWidth,
+            Styles: widgetStyles,
+            lineHeight:lineHeight,
+            lineColor:lineColor,
+          };
+        }
+        return widget;
+      });
+  
+      return {
+        ...prevConfig,
+        main: {
+          ...prevConfig.main,
+          elements: updatedElements,
+        },
+      };
+    });
+  
+    setWidgets(prevWidgets => 
+      prevWidgets.map(widget => 
+        widget.i === widgetId 
+        ? { 
+          ...widget,
+          lineWidth: lineWidth,
+          Styles: widgetStyles,
+          lineHeight:lineHeight,
+          lineColor:lineColor,
+        } 
+        : widget
+      )
+    );
+}
 
 const handleKeyDown = (event) => {
   if (event.key === 'Delete' && selectedComponentId) {
@@ -952,14 +1026,15 @@ const RenderComponent = ( component ) => {
     
   switch (component.type) {
     case 'logo':
-      return(
-        <Logo onClick={()=>{setSelectedComponentId(component.i)}} isConfig={isConfig} updateImageWidget={updateImageWidget} widgetId={component.i} DataUrl={component.imageDataUrl}/>
-      )
+        return(
+          <Logo onClick={()=>{setSelectedComponentId(component.i)}} isConfig={isConfig} updateImageWidget={updateImageWidget} widgetId={component.i} DataUrl={component.imageDataUrl}/>
+        )
     case 'button':
       return (
-        <button style={{ width: '100%', height: '100%', backgroundColor: 'lightblue', borderRadius: '5px' }}  onClick={()=>{setSelectedComponentId(component.i)}}>
-          {component.content || 'Button'}
-        </button>
+        // <button style={{ width: '100%', height: '100%', backgroundColor: 'lightblue', borderRadius: '5px' }}  onClick={()=>{setSelectedComponentId(component.i)}}>
+        //   {component.content || 'Button'}
+        // </button>
+        <Button onClick={()=>{setSelectedComponentId(component.i)}} widgetId={component.i} updateButtonComponent={updateButtonComponent} Styles={component.Styles} ButtonLabel={component.buttonLabel} OnClickAction={component.buttonOnClickAction}/>
       );
 
     case 'textarea':
@@ -991,7 +1066,7 @@ const RenderComponent = ( component ) => {
 
       case 'form':
         return(
-          <Form onClick={()=>{setSelectedComponentId(component.i)}}  updateFormWidget={updateFormWidget} widgetId={component.i} formInputs={component.formInputs} formBackendLink={component.formBackendLink} isPreview={isPreview}/>
+          <Form onClick={()=>{setSelectedComponentId(component.i)}}  updateFormWidget={updateFormWidget} widgetId={component.i} Inputs={component.formInputs} formBackendLink={component.formBackendLink} isPreview={isPreview}/>
           // <FormBuilder/>
           // <FormBuilderComponent/>
         )
@@ -1038,7 +1113,7 @@ const RenderComponent = ( component ) => {
 
       case 'line':
         return(
-          <SimpleLine onClick={()=>{setSelectedComponentId(component.i)}} setIsPopupOpen={setIsPopupOpen}/>
+          <SimpleLine onClick={()=>{setSelectedComponentId(component.i)}} updateLineComponent={updateLineComponent}widgetId={component.i} setIsPopupOpen={setIsPopupOpen} LineHeight={component.lineHeight} LineWidth={component.lineWidth} LineColor={component.lineColor} LineRotation={component.LineRotation}/>
         )
 
       case 'texteditor':
@@ -1062,7 +1137,6 @@ const RenderComponent = ( component ) => {
   }
 
 };
-
 
 const [flayout, setFlayout] = useState([]);
 
@@ -1110,28 +1184,8 @@ console.log("isPreview",isPreview);
 // console.log("slayout",selectedLayout);
 
 return (
-    <div>
-      <div style={{ position: 'absolute', top: '10px', right: '10px' }}>
-        {!isPreview && (
-          <button 
-            onClick={() => {
-              localStorage.setItem('layout', JSON.stringify(layout));
-              handleSaveLayout();
-            }}
-            style={{
-              padding: '5px 10px',
-              backgroundColor: '#007bff',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
-          >
-            Save
-          </button>
-        )}
-      </div>
-      <div className={isPreview ? "canvas-container-preview" : "canvas-container"} style={{position: 'relative',border:'1px solid black' , width: '100vw', height: '100vh'}}>
+    <>
+      <div className="canvas-container-preview" style={{position: 'relative',border:'1px solid black' , width: '100vw', height: '100vh'}}>
         {layout && layout.length>0 ? (
           <ReactGridLayout
             key={`nested-main`}
@@ -1139,7 +1193,7 @@ return (
             layout={layout[0]?.elements}
             cols={12}
             rowHeight={50}
-            width={845}
+            width={945}
             autoSize={true}
             // isDraggable={isPreview ? false : (isConfig ? false : isOuterGridDraggableRef.current)}  // Lock dragging in Preview mode
             // isResizable={isPreview ? false : (isConfig ? false : isOuterGridDraggableRef.current)}  // Lock resizing in Preview mode
@@ -1181,7 +1235,7 @@ return (
           <div>Select a layout</div>
         )}
       </div>
-    </div>
+    </>
   );
   
 }

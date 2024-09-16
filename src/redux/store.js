@@ -8,6 +8,9 @@ import imagepickerReducer from './slices/imagepickerSlice'
 import chartReducer from './slices/chartSlice'
 import dateReducer from './slices/datepickerSlice'
 import textEditorReducer from './slices/texteditorSlice'
+import formReducer from './slices/formSlice'
+import buttonReducer from './slices/buttonSlice'
+import lineReducer from './slices/lineSlice'
 export const store = configureStore({
   reducer: {
     dropdown: dropdownReducer,
@@ -19,5 +22,8 @@ export const store = configureStore({
     chart: chartReducer,
     date:dateReducer,
     textEditor: textEditorReducer,
+    form:formReducer,
+    button:buttonReducer,
+    line:lineReducer,
   },
 });

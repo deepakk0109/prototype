@@ -4,8 +4,7 @@ import { FaHome, FaPlus, FaLayerGroup, FaFont, FaDatabase, FaFileAlt } from 'rea
 
 const Header = () => {
   return (
-  <div>
-    <header className="header">
+    <div className="header">
     <div className="header-item">
       <div className="icon-with-text">
         <FaHome className="header-icon" />
@@ -24,7 +23,6 @@ const Header = () => {
       <Link to="/preview">PREVIEW</Link>
       <Link to="/deploy">DEPLOY</Link>
     </nav>
-  </header>
   </div>
   )
 }

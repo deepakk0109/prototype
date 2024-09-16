@@ -159,7 +159,7 @@ const DropdownSidebar = ({ updateDropdownWidget, widgetId }) => {
   };
 
   return (
-    <div className='dropdown-sidebar'>
+    <div className='dropdown-sidebar' style={{padding:'10px'}}>
       <h2>Dropdown</h2>
       <div style={{ marginBottom: '20px' }}>
         <label>Label:</label>

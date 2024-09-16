@@ -55,7 +55,7 @@ const Logo = ({ onClick,isConfig, updateImageWidget, widgetId, DataUrl }) => {
   };
 
   return (
-    <div className="container" style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div onClick={()=>{onClick()}} className="container" style={{ position: 'relative', width: '100%', height: '100%' }}>
       <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         {imageSrc || isPreview ? (
           <img

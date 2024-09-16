@@ -287,7 +287,7 @@ return(
 }
 const inputStyles={
         width: '90%',
-        padding: '8px',
+        padding: '5px',
         border: '1px solid #ddd',
         borderRadius: '4px',
         marginBottom:'5px',

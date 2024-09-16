@@ -7,70 +7,42 @@
   border: 1px solid #b2ebf2;
   display: flex;
   font-size: 24px;
-  width: 845px; /* Set to 100% width for responsive scaling */
+  width: 945px; /* Set to 100% width for responsive scaling */
   height: auto;
-  aspect-ratio: 16 / 11; /* Maintain a specific aspect ratio */
+  aspect-ratio: 16 / 11;
   overflow-y: auto;
 }
-/* .canvas-container-preview  {
+.canvas-container-preview  {
   position: relative;
   overflow: hidden;
   background-color: white;
   border: 1px solid #b2ebf2;
   display: flex;
   font-size: 24px;
-  width: 100%; 
-  height: auto;
-  aspect-ratio: 16 / 11; 
+  width: 100%;
+  /* max-width: 800px; */
+  /* height: auto; */
+  aspect-ratio: 16 / 11;
   overflow-y: auto;
-} */
+}
 
-/* Small tablets and larger phones */
-@media (min-width: 768px) {
+/* Media query for devices with a minimum width of 800px */
+@media (min-width:1370px) {
   .canvas-container-preview {
-    width: 100%;
-    /* height: 90vh;  */
-    /* aspect-ratio: 16 / 11; */
-    font-size: 22px;
-    overflow-y: auto;
+    max-width: 1370px;
+    height: auto; 
   }
 }
 
-/* Tablets */
-
-
-/* Large phones and smaller tablets */
-@media (max-width: 768px) {
-  .canvas-container-preview {
+/* Media query for devices with a width less than 800px */
+@media (max-width: 799px) {
+  .canvas-container-preview  {
     width: 100%;
-    /* height: 80vh; */
-    /* aspect-ratio: 16 / 11; */
-    font-size: 18px;
-    overflow-y: auto;
+    height: auto;
   }
 }
 
-/* Extra small devices (portrait phones) */
-@media (max-width: 576px) {
-  .canvas-container-preview {
-    width: 100%;
-    /* height: 75vh; */
-    /* aspect-ratio: 16 / 11; */
-    font-size: 16px;
-    overflow-y: auto;
-  }
-}
 
-/* Extremely small devices (small portrait phones) */
-@media (max-width: 360px) {
-  .canvas-container-preview {
-    width: 100%;
-    /* height: 70vh;  */
-    /* aspect-ratio: 16 / 11; */
-    font-size: 14px;
-    overflow-y: auto;
-  }
-}
 
 
 

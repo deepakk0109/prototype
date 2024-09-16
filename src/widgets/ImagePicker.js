@@ -22,7 +22,7 @@ const ImagePicker = ({ onClick,isConfig, updateImageWidget, widgetId, DataUrl })
     objectFit: 'contain',
     compressInitial: null,
   };
-
+// console.log("DataUrl",DataUrl);
   useEffect(() => {
     if (DataUrl) {
       dispatch(setImageSrc({ widgetId, imageSrc: DataUrl || '' }));
@@ -53,9 +53,9 @@ const ImagePicker = ({ onClick,isConfig, updateImageWidget, widgetId, DataUrl })
       </React.StrictMode>
     );
   };
-
+// console.log("imageSrc",imageSrc);
   return (
-    <div className="container" style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div  onClick={()=>{onClick()}} className="container" style={{ position: 'relative', width: '100%', height: '100%' }}>
       <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
         {imageSrc || isPreview ? (
           <img

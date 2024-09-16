@@ -155,16 +155,16 @@ const TableSidebar = ({ widgetId, updateTableWidget }) => {
 
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>Enter Table Data API Url</h2>
+    <div style={{ padding: '10px' }}>
+      <div style={{fontWeight:'bold'}}>Enter Table Data API Url</div>
       <input
         type="text"
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         placeholder="https://api.example.com/data"
         style={{
-          width: '100%',
-          padding: '8px',
+          width: '90%',
+          padding: '5px',
           marginBottom: '10px',
           border: '1px solid #ddd',
           borderRadius: '4px',

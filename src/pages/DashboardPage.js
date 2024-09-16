@@ -8,6 +8,7 @@ import Canvas from './Canvas3';
 import Toolbar from './Toolbar';
 import Preview from './Preview';
 import layoutService from '../services/layoutService';
+import Header from './Header';
 
 const DashboardPage = () => {
   const [selectedLayout, setSelectedLayout] = useState(null);
@@ -47,9 +48,10 @@ const DashboardPage = () => {
 
   return (
     <div className="dashboard-container">
-    {isPreview?(
+    {/* {isPreview?(
       <Preview/>
-    ):(
+    ):( */}
+    <Header/> 
     <div className={`main-content ${isPreview ? 'preview-mode' : ''}`}>
           <>
             <aside className="sidebar left-sidebar">
@@ -99,7 +101,7 @@ const DashboardPage = () => {
      <aside id="sidebar" className="sidebar right-sidebar"></aside>
 
     </div>
-  )}
+  {/* )} */}
       
     </div>
   );

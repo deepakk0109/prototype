@@ -70,7 +70,15 @@ const Checkbox = ({ onClick,updateCheckboxWidget, widgetId, flag: propFlag, labe
     };
 
     return (
-        <div onClick={()=>{onClick();toggleSettings()}} style={{...widgetStyles, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', position: 'relative' }}>
+        <div onClick={()=>{onClick();toggleSettings()}} style={{
+          ...widgetStyles,
+          width: '100%',
+          height: '100%',
+          position: 'relative',
+          display: 'flex', // Flexbox layout
+          alignItems: 'center', // Vertically align items
+          justifyContent: 'flex-start', // Left-align the items
+      }}>
             {isConfig && (
                 <button
                     style={{
@@ -94,12 +102,12 @@ const Checkbox = ({ onClick,updateCheckboxWidget, widgetId, flag: propFlag, labe
                 onChange={handleCheckboxChange}
                 style={{
                     transform: `scale(${parseInt(size, 10) / 24})`, // Adjust the scale factor as needed
-                    margin: '0 10px', // Add margin for spacing
+                    marginRight: '10px', // Add margin for spacing
                 }}
             />
             <label
                 style={{
-                    marginLeft: '10px',
+                    // marginLeft: '10px',
                     fontSize: labelFontSize,
                 }}
             >

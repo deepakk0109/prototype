@@ -30,6 +30,7 @@ import { FormBuilder } from '../widgets/FormBuilder';
 import { TextBox } from '../widgets/rte';
 import FormBuilderComponent from '../widgets/fb';
 import { Logo } from '../widgets/Logo';
+import {Button} from '../components/Button';
 
 
 const ReactGridLayout = WidthProvider(GridLayout);
@@ -302,11 +303,11 @@ const addComponentToLayout = (component) => {
 };
 
 // Effect to handle the addition of a selected component to the layout
-useEffect(() => {
-  if (selectedComponent) {
-    addComponentToLayout(selectedComponent);
-  }
-}, [selectedComponent]);
+// useEffect(() => {
+//   if (selectedComponent) {
+//     addComponentToLayout(selectedComponent);
+//   }
+// }, [selectedComponent]);
 
 // Function to update layout and content
 const onNestedLayoutChange = (newLayout, sectionKey) => {
@@ -490,6 +491,19 @@ const addwidgetToLayout = (widget) => {
     newWidget.w=3;
     newWidget.h=2;
     newWidget.textEditorContent='';
+  }
+  if(widget.type==='button'){
+    newWidget.w=1;
+    newWidget.h=2;
+    newWidget.buttonLabel='';
+    newWidget.buttonOnClickAction='';
+  }
+  if(widget.type==='line'){
+    newWidget.w=3;
+    newWidget.h=0.5;
+    newWidget.lineHeight='';
+    newWidget.lineWidth='';
+    newWidget.lineColor='';
   }
 
   console.log("new Widget",newWidget);
@@ -910,6 +924,81 @@ const updateTextEditorWidget=(widgetId,htmlContent) => {
     )
   );
 }
+const updateButtonComponent=(widgetId,widgetStyles,buttonLabel,onClickAction)=>{
+    setLayoutConfig(prevConfig => {
+        const updatedElements = prevConfig.main.elements.map(widget => {
+          if (widget.i === widgetId) {
+            return {
+              ...widget,
+              buttonLabel: buttonLabel,
+              Styles: widgetStyles,
+              buttonOnClickAction:onClickAction,
+            };
+          }
+          return widget;
+        });
+    
+        return {
+          ...prevConfig,
+          main: {
+            ...prevConfig.main,
+            elements: updatedElements,
+          },
+        };
+      });
+    
+      setWidgets(prevWidgets => 
+        prevWidgets.map(widget => 
+          widget.i === widgetId 
+          ? { 
+            ...widget,
+            buttonLabel: buttonLabel,
+            Styles: widgetStyles,
+            buttonOnClickAction:onClickAction,
+          } 
+          : widget
+        )
+      );
+}
+
+const updateLineComponent=(widgetId,lineWidth,lineHeight,lineColor,widgetStyles)=>{
+    setLayoutConfig(prevConfig => {
+        const updatedElements = prevConfig.main.elements.map(widget => {
+          if (widget.i === widgetId) {
+            return {
+              ...widget,
+              lineWidth: lineWidth,
+              Styles: widgetStyles,
+              lineHeight:lineHeight,
+              lineColor:lineColor,
+            };
+          }
+          return widget;
+        });
+    
+        return {
+          ...prevConfig,
+          main: {
+            ...prevConfig.main,
+            elements: updatedElements,
+          },
+        };
+      });
+    
+      setWidgets(prevWidgets => 
+        prevWidgets.map(widget => 
+          widget.i === widgetId 
+          ? { 
+            ...widget,
+            lineWidth: lineWidth,
+            Styles: widgetStyles,
+            lineHeight:lineHeight,
+            lineColor:lineColor,
+          } 
+          : widget
+        )
+      );
+}
 
 
 
@@ -974,9 +1063,10 @@ const RenderComponent = ( component ) => {
         )
     case 'button':
       return (
-        <button style={{ width: '100%', height: '100%', backgroundColor: 'lightblue', borderRadius: '5px' }}  onClick={()=>{setSelectedComponentId(component.i)}}>
-          {component.content || 'Button'}
-        </button>
+        // <button style={{ width: '100%', height: '100%', backgroundColor: 'lightblue', borderRadius: '5px' }}  onClick={()=>{setSelectedComponentId(component.i)}}>
+        //   {component.content || 'Button'}
+        // </button>
+        <Button onClick={()=>{setSelectedComponentId(component.i)}} widgetId={component.i} updateButtonComponent={updateButtonComponent} Styles={component.Styles} ButtonLabel={component.buttonLabel} OnClickAction={component.buttonOnClickAction}/>
       );
 
     case 'textarea':
@@ -1008,7 +1098,7 @@ const RenderComponent = ( component ) => {
 
       case 'form':
         return(
-          <Form onClick={()=>{setSelectedComponentId(component.i)}}  updateFormWidget={updateFormWidget} widgetId={component.i} formInputs={component.formInputs} formBackendLink={component.formBackendLink} isPreview={isPreview}/>
+          <Form onClick={()=>{setSelectedComponentId(component.i)}}  updateFormWidget={updateFormWidget} widgetId={component.i} Inputs={component.formInputs} formBackendLink={component.formBackendLink} isPreview={isPreview}/>
           // <FormBuilder/>
           // <FormBuilderComponent/>
         )
@@ -1055,7 +1145,7 @@ const RenderComponent = ( component ) => {
 
       case 'line':
         return(
-          <SimpleLine onClick={()=>{setSelectedComponentId(component.i)}} setIsPopupOpen={setIsPopupOpen}/>
+          <SimpleLine onClick={()=>{setSelectedComponentId(component.i)}} updateLineComponent={updateLineComponent}widgetId={component.i} setIsPopupOpen={setIsPopupOpen} LineHeight={component.lineHeight} LineWidth={component.lineWidth} LineColor={component.lineColor} LineRotation={component.LineRotation}/>
         )
 
       case 'texteditor':
@@ -1127,45 +1217,49 @@ console.log("isPreview",isPreview);
 // console.log("slayout",selectedLayout);
 
 return (
-    <div>
+    <>
       <div style={{ position: 'absolute', top: '10px', right: '10px' }}>
-        {!isPreview && selectedLayout? (
-          <button 
-            onClick={() => {
-              localStorage.setItem('layout', JSON.stringify(layout));
-              handleSaveLayout();
-            }}
-            style={{
-              padding: '5px 10px',
-              backgroundColor: '#007bff',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
-          >
-            Save
-          </button>
-        )
-        :(
+      {
+      !isPreview && (
+    <>
+      {!selectedLayout && (
+        <button 
+          onClick={() => {
+            updateLayout();
+          }}
+          style={{
+            padding: '5px 10px',
+            backgroundColor: '#007bff',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+          }}
+        >
+          Update
+        </button>
+      )}
             <button 
-              onClick={() => {
-                updateLayout();
-              }}
-              style={{
-                padding: '5px 10px',
-                backgroundColor: '#007bff',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-              }}
-            >
-              Update
-            </button>
-          )
-          }
-        {/* {!isPreview && savedlayout &&} */}
+        onClick={() => {
+          localStorage.setItem('layout', JSON.stringify(layout));
+          handleSaveLayout();
+        }}
+        style={{
+          padding: '5px 10px',
+          backgroundColor: '#007bff',
+          color: '#fff',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer',
+          marginLeft:'5px',
+        }}
+      >
+        Save
+      </button>
+    </>
+      )
+     }
+
       </div>
       <div className={isPreview ? "canvas-container-preview" : "canvas-container"} style={{position: 'relative',border:'1px solid black' }}>
         {layout && layout.length>0 ? (
@@ -1174,8 +1268,8 @@ return (
             className="components"
             layout={layout[0]?.elements}
             cols={12}
-            rowHeight={39}
-            width={845}
+            rowHeight={36}
+            width={945}
             autoSize={true}
             isDraggable={isPreview ? false : (isConfig ? false : isOuterGridDraggableRef.current)}  // Lock dragging in Preview mode
             isResizable={isPreview ? false : (isConfig ? false : isOuterGridDraggableRef.current)}  // Lock resizing in Preview mode
@@ -1215,7 +1309,7 @@ return (
           <div>Select a layout</div>
         )}
       </div>
-    </div>
+    </>
   );
   
 }

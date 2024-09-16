@@ -1,3 +1,4 @@
+import { rotate } from 'mathjs';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -120,8 +121,6 @@ const StyleModel = ({ widgetId,state,setWidgetStyles}) => {
                 borderRadius: '4px',
             }}
           />
-          
-      
         </div>
         <div style={{ marginBottom: '10px' }}>
           <label>Font Size</label>
@@ -236,6 +235,32 @@ const StyleModel = ({ widgetId,state,setWidgetStyles}) => {
           }}
           />
         </div>
+
+        <div style={{ marginBottom: '10px' }}>
+          <label>Rotation (degrees):</label>
+          <input
+            type="text"
+            value={widgetStyles.rotationAngle} // Now using rotationAngle from widgetStyles
+            onChange={(e) =>
+              dispatch(setWidgetStyles({ 
+                widgetId,
+                widgetStyles: {
+                  ...widgetStyles,
+                  rotationAngle: e.target.value, // Updated rotation property
+                },
+              }))
+            }
+            style={{
+              width: '100%',
+              padding: '8px',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+            }}
+          />
+        </div>
+
+
+
         </>
          </div>
         
